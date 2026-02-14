@@ -55,13 +55,20 @@ datasource:
           max-wait: 2000ms
         shutdown-timeout: 200ms
 
-  # ─── Thymeleaf ───────────────────────────────────────────────────────────────
-  thymeleaf:
-    cache: ${THYMELEAF_CACHE:true}    # disable in dev, enable in prod
-    mode: HTML
-    encoding: UTF-8
-    prefix: classpath:/templates/
-    suffix: .html
+  # ─── JTE (Java Template Engine) ──────────────────────────────────────────────
+  web:
+    resources:
+      cache:
+        cachecontrol:
+          max-age: 3600
+          must-revalidate: true
+
+# ─── JTE Configuration ───────────────────────────────────────────────────────
+gg:
+  jte:
+    template-location: classpath:/templates/jte
+    use-precompiled-templates: false    # set true in production
+    development-mode: ${JTE_DEV_MODE:true}    # disable in production
 
   # ─── Session (Redis-backed) ───────────────────────────────────────────────────
   session:

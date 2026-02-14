@@ -1,14 +1,4 @@
-<!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="en">
-<!--
-  ══════════════════════════════════════════════════════════════════════════════
-  Fragment: nav
-  McMaster-Carr style navigation header with utility bar and search
-  Usage: <header th:replace="fragments/nav :: nav"></header>
-  ══════════════════════════════════════════════════════════════════════════════
--->
-<body>
-<header th:fragment="nav" class="site-header">
+<header class="site-header">
     <!-- Utility Bar (Yellow top bar) -->
     <div class="utility-bar">
         <div class="container">
@@ -24,7 +14,7 @@
     <div class="header-main">
         <div class="container">
             <!-- Logo -->
-            <a th:href="@{/}"
+            <a href="/"
                class="site-logo"
                hx-get="/"
                hx-target="#main-content"
@@ -32,7 +22,7 @@
 
             <!-- Search Bar -->
             <div class="search-bar">
-                <form method="get" th:action="@{/catalog/search}"
+                <form method="get" action="/catalog/search"
                       hx-get="/catalog/search"
                       hx-target="#main-content"
                       hx-trigger="submit"
@@ -49,11 +39,11 @@
             <!-- Quick Links -->
             <nav>
                 <ul class="nav-links">
-                    <li><a th:href="@{/}"
+                    <li><a href="/"
                            hx-get="/"
                            hx-target="#main-content"
                            hx-push-url="true">Home</a></li>
-                    <li><a th:href="@{/catalog}"
+                    <li><a href="/catalog"
                            hx-get="/catalog"
                            hx-target="#main-content"
                            hx-push-url="true">Products</a></li>
@@ -62,6 +52,4 @@
         </div>
     </div>
 </header>
-</body>
-</html>
 

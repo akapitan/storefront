@@ -21,7 +21,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
 @SpringBootApplication
 @EnableCaching
 @EnableAsync
-public final class StorefrontApplication {
+public class StorefrontApplication {
 
     private StorefrontApplication() {
     }

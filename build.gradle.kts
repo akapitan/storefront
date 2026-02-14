@@ -14,32 +14,21 @@ java {
     }
 }
 
-// ─── Dependency versions (also see gradle/libs.versions.toml) ─────────────────
-//val jooqVersion          = libs.versions.jooq.get()
-//val springModulithVersion = libs.versions.springModulith.get()
-//val testcontainersVersion = libs.versions.testcontainers.get()
-
 // ─── Dependencies ─────────────────────────────────────────────────────────────
 dependencies {
 
-    // ── Web + Thymeleaf ───────────────────────────────────────────────────────
+    // ── Web + JTE ─────────────────────────────────────────────────────────────
     implementation("org.springframework.boot:spring-boot-starter-web")
-    implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
-//    implementation("org.thymeleaf.extras:thymeleaf-extras-springsecurity6")
-// Test
-//    implementation(libs.spring.data.commons)
+    implementation("gg.jte:jte-spring-boot-starter-3:3.1.12")
+    implementation("gg.jte:jte:3.1.12")
 
     // ── jOOQ (OSS — PostgreSQL supported) ────────────────────────────────────
     implementation("org.springframework.boot:spring-boot-starter-jooq")
-//    implementation("org.jooq:jooq:$jooqVersion")
     // jOOQ codegen only needed at build time
     // Align jOOQ codegen artifacts to Spring Boot's BOM to avoid version mismatches.
     jooqCodegen(platform(libs.spring.boot.bom))
     jooqCodegen(libs.postgresql)
     jooqCodegen(libs.jooq.codegen)
-//    jooqCodegen("org.jooq:jooq-meta:$jooqVersion")
-//    jooqCodegen("org.jooq:jooq-codegen:$jooqVersion")
-//    jooqCodegen("org.postgresql:postgresql")
 
     // ── Database ─────────────────────────────────────────────────────────────
     runtimeOnly("org.postgresql:postgresql")
@@ -56,7 +45,6 @@ dependencies {
 //    implementation("org.springframework.session:spring-session-data-redis")
 
     // ── Spring Modulith ───────────────────────────────────────────────────────
-//    implementation("org.springframework.modulith:spring-modulith-starter-core")
     implementation("org.springframework.modulith:spring-modulith-starter-core:2.0.2")
     // Produces module documentation (C4/PlantUML) via tests
     testImplementation("org.springframework.modulith:spring-modulith-starter-test:2.0.2")
@@ -75,76 +63,6 @@ dependencies {
     implementation(libs.testcontainers.junit.jupiter)
     implementation(libs.testcontainers.postgresql)
 }
-
-/*
-// ─── jOOQ Code Generation ─────────────────────────────────────────────────────
-//
-// Run with:   ./gradlew jooqCodegen
-//
-// Prerequisite: a running local PostgreSQL with Flyway migrations applied.
-// Tip: run `docker compose up -d db && ./gradlew flywayMigrate jooqCodegen`
-//
-// Generated classes land in src/main/generated/
-// Commit them — they are your type-safe SQL API.
-//
-jooq {
-    configuration {
-        logging = Logging.WARN
-
-        jdbc {
-            driver   = "org.postgresql.Driver"
-            url      = System.getenv("CODEGEN_DB_URL")
-                       ?: "jdbc:postgresql://localhost:5432/storefront_dev"
-            user     = System.getenv("CODEGEN_DB_USER")     ?: "storefront"
-            password = System.getenv("CODEGEN_DB_PASSWORD") ?: "storefront"
-        }
-
-        generator {
-            name = "org.jooq.codegen.JavaGenerator"
-
-            database {
-                name         = "org.jooq.meta.postgres.PostgresDatabase"
-                inputSchema  = "public"
-                includes     = ".*"
-                excludes     = "flyway_schema_history"
-
-                // JSONB → Jackson JsonNode
-                forcedTypes.addAll(listOf(
-                    ForcedType().apply {
-                        userType    = "com.fasterxml.jackson.databind.JsonNode"
-                        includeTypes = "JSONB"
-                        includeExpression = ".*"
-                        converter   = "com.storefront.shared.jooq.JsonNodeConverter"
-                    },
-                    ForcedType().apply {
-                        name = "BIGDECIMAL"
-                        includeExpression = ".*\\.(price|amount|cost|total).*"
-                        includeTypes = "NUMERIC"
-                    }
-                ))
-            }
-
-            generate {
-                isPojos                  = true
-                isPojosEqualsAndHashCode = true
-                isFluentSetters          = true
-                isComments               = true
-                isValidationAnnotations  = true
-                isSpringAnnotations      = true
-                isSerializablePojos      = true  // Redis-cacheable
-                isImmutablePojos         = false
-            }
-
-            target {
-                packageName = "com.storefront.jooq"
-                directory   = "src/main/generated"
-                encoding    = "UTF-8"
-                isClean     = true
-            }
-        }
-    }
-}
-*/
 
 // Include generated sources in compilation
 sourceSets {

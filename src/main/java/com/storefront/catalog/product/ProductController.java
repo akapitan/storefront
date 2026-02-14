@@ -19,9 +19,11 @@ import java.util.UUID;
  * All endpoints return either a full page or a Thymeleaf fragment
  * depending on whether the request is from HTMX or a direct browser load.
  *
- * Fragment naming convention:
- *   "catalog/product-grid :: grid"    → renders only the <div th:fragment="grid"> block
+ * Template naming convention:
+ *   "catalog/product-grid-content"    → renders content area only
+ *   "catalog/product-cards"           → renders cards for infinite scroll
  *   "catalog/product-detail"          → full page render
+ *   "catalog/product-detail-content"  → detail content only
  *
  * HTMX patterns used:
  *   hx-get + hx-target   → swap product grid on filter change
@@ -66,13 +68,9 @@ class ProductController {
         // Push URL so browser back button works
         HtmxResponse.pushUrl(response, "/catalog/category/" + categoryId + "?page=" + page + "&sort=" + sort);
 
-        // HTMX requests get the appropriate fragment based on target
+        // HTMX requests get the content template
         if (HtmxResponse.isHtmxRequest(request)) {
-            String target = request.getHeader("HX-Target");
-            if ("main-content".equals(target)) {
-                return "catalog/product-grid :: content-wrapper";
-            }
-            return "catalog/product-grid :: grid";
+            return "catalog/product-grid-content";
         }
         return "catalog/product-grid";
     }
@@ -99,9 +97,8 @@ class ProductController {
         model.addAttribute("hasMore",   slice.hasMore());
         model.addAttribute("nextPage",  page + 1);
         model.addAttribute("sort",      sort);
-        model.addAttribute("categoryId", categoryId);
+        return "catalog/product-cards";
 
-        return "catalog/product-grid :: cards";
     }
 
     // ─── Product search ───────────────────────────────────────────────────────
@@ -135,7 +132,7 @@ class ProductController {
         HtmxResponse.pushUrl(response, "/catalog/search?q=" + q + "&page=" + page);
 
         if (HtmxResponse.isHtmxRequest(request)) {
-            return "catalog/search-results :: results";
+            return "catalog/search-results-content";
         }
         return "catalog/search-results";
     }
@@ -158,9 +155,9 @@ class ProductController {
 
         model.addAttribute("product", product);
 
-        // For HTMX requests, return only the detail content fragment
+        // For HTMX requests, return only the detail content template
         if (HtmxResponse.isHtmxRequest(request)) {
-            return "catalog/product-detail :: detail-content";
+            return "catalog/product-detail-content";
         }
         return "catalog/product-detail";
     }
@@ -168,7 +165,7 @@ class ProductController {
     // ─── Quick-view (HTMX modal fragment) ────────────────────────────────────
 
     /**
-     * Returns a product card fragment for HTMX modal quick-view.
+     * Returns a product quick-view template for HTMX modal.
      * Triggered by hx-get on a product card's "Quick view" button.
      */
     @GetMapping("/product/{sku}/quick-view")
@@ -176,7 +173,7 @@ class ProductController {
         var product = catalogApi.findBySku(sku)
                 .orElseThrow(() -> new ProductNotFoundException(sku));
         model.addAttribute("product", product);
-        return "catalog/product-detail :: quick-view";
+        return "catalog/product-quick-view";
     }
 
     // ─── Exception ────────────────────────────────────────────────────────────

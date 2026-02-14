@@ -1,14 +1,4 @@
-<!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="en">
-<!--
-  ══════════════════════════════════════════════════════════════════════════════
-  Fragment: footer
-  McMaster-Carr style site footer
-  Usage: <footer th:replace="fragments/footer :: footer"></footer>
-  ══════════════════════════════════════════════════════════════════════════════
--->
-<body>
-<footer th:fragment="footer" class="site-footer">
+<footer class="site-footer">
     <div class="container">
         <div class="footer-content">
             <!-- Company Info -->
@@ -62,16 +52,4 @@
         </div>
     </div>
 </footer>
-</body>
-</html>
-
-        </div>
-
-        <div class="footer-bottom">
-            <p>&copy; <span th:text="${#dates.year(#dates.createNow())}">2026</span> Storefront. All rights reserved.</p>
-        </div>
-    </div>
-</footer>
-</body>
-</html>
 
