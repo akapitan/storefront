@@ -1,0 +1,45 @@
+version: "3.9"
+
+# ─── Local development stack ──────────────────────────────────────────────────
+# Start with: docker compose up -d
+# Stop with:  docker compose down
+# Wipe data:  docker compose down -v
+
+services:
+
+  # ─── PostgreSQL (primary) ─────────────────────────────────────────────────
+  db:
+    image: postgres:16-alpine
+    container_name: storefront-db
+    environment:
+      POSTGRES_DB:       storefront_dev
+      POSTGRES_USER:     storefront
+      POSTGRES_PASSWORD: storefront
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U storefront -d storefront_dev"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ─── Redis ────────────────────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: storefront-redis
+    command: redis-server --save 60 1 --loglevel warning
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  postgres-data:
+  redis-data:

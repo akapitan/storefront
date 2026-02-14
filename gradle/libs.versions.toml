@@ -1,0 +1,36 @@
+[versions]
+spring-boot           = "4.0.2"
+springDependencyMgmt  = "1.1.5"
+jooq                  = "3.19.10"
+jooqGradlePlugin      = "9.0"          # nu.studer.jooq plugin
+springModulith        = "1.2.1"
+testcontainers        = "1.19.8"
+caffeine              = "3.1.8"
+jooq-docker = "8.0.11"
+
+
+[libraries]
+# Spring Boot starters are resolved via BOM — no explicit version needed here
+spring-boot-bom = { module = "org.springframework.boot:spring-boot-dependencies", version.ref = "spring-boot" }
+
+# jOOQ
+#jooq-core              = { module = "org.jooq:jooq",          version.ref = "jooq" }
+spring-boot-starter-jooq = { module = "org.springframework.boot:spring-boot-starter-jooq" }
+#jooq-meta              = { module = "org.jooq:jooq-meta",     version.ref = "jooq" }
+jooq-codegen            = { module = "org.jooq:jooq-codegen" }
+spring-boot-starter-jooq-test = { module = "org.springframework.boot:spring-boot-starter-jooq-test" }
+postgresql              = { module = "org.postgresql:postgresql" }
+
+# Spring Modulith
+spring-modulith-core  = { module = "org.springframework.modulith:spring-modulith-starter-core", version.ref = "springModulith" }
+spring-modulith-test  = { module = "org.springframework.modulith:spring-modulith-starter-test", version.ref = "springModulith" }
+
+# Testcontainers
+testcontainers-junit-jupiter = { module = "org.testcontainers:testcontainers-junit-jupiter" }
+testcontainers-postgresql = { module = "org.testcontainers:testcontainers-postgresql" }
+
+[plugins]
+spring-boot                = { id = "org.springframework.boot",          version.ref = "spring-boot" }
+spring-dependency-management = { id = "io.spring.dependency-management", version.ref = "springDependencyMgmt" }
+jooq-codegen               = { id = "dev.monosoul.jooq-docker",          version = "6.1.2" }
+jooq-docker = { id = "dev.monosoul.jooq-docker", version.ref = "jooq-docker" }

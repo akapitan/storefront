@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <title>Products</title>
+    <meta charset="UTF-8"/>
+    <script src="https://unpkg.com/htmx.org@2.0.0" defer></script>
+</head>
+<body>
+
+<!--
+  Full page wrapper — rendered on direct browser loads.
+  HTMX requests get only the "grid" or "cards" fragment below.
+-->
+<main>
+    <div th:replace="~{:: #grid-root}"></div>
+</main>
+
+<!--
+  ══════════════════════════════════════════════════════════
+  Fragment: grid
+  Target:   hx-target="#product-grid"
+  Contains: sort controls + the cards fragment
+  ══════════════════════════════════════════════════════════
+-->
+<div id="grid-root" th:fragment="grid">
+
+    <!-- Sort controls — each option fires an HTMX get that swaps the grid -->
+    <div class="sort-bar">
+        <span>Sort by:</span>
+        <a th:href="@{/catalog/category/{id}(id=${categoryId},sort='default')}"
+           th:classappend="${sort == 'default'} ? 'active'"
+           hx-get="@{/catalog/category/{id}(id=${categoryId},sort='default')}"
+           hx-target="#product-grid"
+           hx-push-url="true">Featured</a>
+
+        <a th:href="@{/catalog/category/{id}(id=${categoryId},sort='price_asc')}"
+           th:classappend="${sort == 'price_asc'} ? 'active'"
+           hx-get="@{/catalog/category/{id}(id=${categoryId},sort='price_asc')}"
+           hx-target="#product-grid"
+           hx-push-url="true">Price ↑</a>
+
+        <a th:href="@{/catalog/category/{id}(id=${categoryId},sort='price_desc')}"
+           th:classappend="${sort == 'price_desc'} ? 'active'"
+           hx-get="@{/catalog/category/{id}(id=${categoryId},sort='price_desc')}"
+           hx-target="#product-grid"
+           hx-push-url="true">Price ↓</a>
+
+        <a th:href="@{/catalog/category/{id}(id=${categoryId},sort='name')}"
+           th:classappend="${sort == 'name'} ? 'active'"
+           hx-get="@{/catalog/category/{id}(id=${categoryId},sort='name')}"
+           hx-target="#product-grid"
+           hx-push-url="true">Name</a>
+    </div>
+
+    <!-- Product cards grid -->
+    <div id="product-grid">
+        <div th:replace="~{:: #cards-root}"></div>
+    </div>
+</div>
+
+<!--
+  ══════════════════════════════════════════════════════════
+  Fragment: cards
+  Target:   appended inside #product-grid by infinite scroll
+  Contains: individual product cards + scroll sentinel
+  ══════════════════════════════════════════════════════════
+-->
+<div id="cards-root" th:fragment="cards">
+
+    <!-- Product card loop -->
+    <div th:each="product, stat : ${products}"
+         class="product-card"
+         th:classappend="${stat.last and hasMore} ? 'scroll-sentinel'">
+
+        <!-- Infinite scroll trigger — fires when last card enters viewport -->
+        <div th:if="${stat.last and hasMore}"
+             hx-get="@{/catalog/category/{id}/more(id=${categoryId},page=${nextPage},sort=${sort})}"
+             hx-trigger="revealed"
+             hx-target="#product-grid"
+             hx-swap="beforeend">
+        </div>
+
+        <!-- Product thumbnail -->
+        <a th:href="@{/catalog/product/{sku}(sku=${product.sku()})}">
+            <img th:if="${product.thumbnailKey() != null}"
+                 th:src="@{/assets/images/{key}(key=${product.thumbnailKey()})}"
+                 th:alt="${product.name()}"
+                 loading="lazy"/>
+            <div th:unless="${product.thumbnailKey() != null}" class="no-image">No image</div>
+        </a>
+
+        <!-- Product info -->
+        <div class="product-info">
+            <a th:href="@{/catalog/product/{sku}(sku=${product.sku()})}"
+               th:text="${product.name()}" class="product-name"></a>
+
+            <span th:text="${product.sku()}" class="product-sku"></span>
+
+            <span th:text="${#numbers.formatCurrency(product.price())}"
+                  class="product-price"></span>
+
+            <!-- Quick view — HTMX modal -->
+            <button hx-get="@{/catalog/product/{sku}/quick-view(sku=${product.sku()})}"
+                    hx-target="#modal-container"
+                    hx-swap="innerHTML"
+                    class="btn-quick-view">Quick view</button>
+        </div>
+    </div>
+
+    <!-- Empty state -->
+    <div th:if="${#lists.isEmpty(products)}" class="empty-state">
+        No products found in this category.
+    </div>
+</div>
+
+<!-- Modal container — populated by quick-view HTMX requests -->
+<div id="modal-container"></div>
+
+</body>
+</html>
