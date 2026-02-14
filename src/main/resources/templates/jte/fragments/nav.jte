@@ -20,20 +20,24 @@
                hx-target="#main-content"
                hx-push-url="true">McMaster-Carr</a>
 
-            <!-- Search Bar -->
+            <!-- Search Bar with Dropdown -->
             <div class="search-bar">
-                <form method="get" action="/catalog/search"
-                      hx-get="/catalog/search"
-                      hx-target="#main-content"
-                      hx-trigger="submit"
-                      hx-push-url="true">
+                <form method="get" action="/catalog/search">
                     <input type="search"
                            name="q"
+                           id="search-input"
                            class="search-input"
                            placeholder="Search for products..."
-                           autocomplete="off"/>
+                           autocomplete="off"
+                           hx-get="/catalog/search/dropdown"
+                           hx-trigger="input changed delay:300ms[this.value.trim().length > 0]"
+                           hx-target="#search-dropdown"
+                           hx-indicator="#search-spinner"/>
+                    <span id="search-spinner" class="htmx-indicator">...</span>
                     <button type="submit" class="btn btn-primary">Search</button>
                 </form>
+                <!-- Search Results Dropdown -->
+                <div id="search-dropdown" class="search-dropdown"></div>
             </div>
 
             <!-- Quick Links -->

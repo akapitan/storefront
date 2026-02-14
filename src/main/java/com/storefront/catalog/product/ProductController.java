@@ -104,6 +104,38 @@ class ProductController {
     // ─── Product search ───────────────────────────────────────────────────────
 
     /**
+     * Search dropdown — instant search results as you type.
+     * Returns a dropdown with top matching products.
+     */
+    @GetMapping("/search/dropdown")
+    public String searchDropdown(
+            @RequestParam(defaultValue = "") String q,
+            Model model,
+            HttpServletResponse response) {
+
+        // Return nothing for empty queries
+        if (q.isBlank()) {
+            response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+            return null;
+        }
+
+        // Show hint for queries with only 1 character
+        if (q.length() < 2) {
+            return "catalog/search-dropdown-empty";
+        }
+
+        // Limit to top 10 results for dropdown
+        var pageRequest = PageRequest.of(0, 10, "relevance");
+        var results     = catalogApi.search(q, pageRequest);
+
+        model.addAttribute("results", results.items());
+        model.addAttribute("totalItems", results.totalItems());
+        model.addAttribute("query", q);
+
+        return "catalog/search-dropdown";
+    }
+
+    /**
      * Full-text product search.
      * HTMX: triggered on input with hx-trigger="input changed delay:300ms".
      */

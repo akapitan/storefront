@@ -2,7 +2,7 @@
 @import java.util.List
 
 @param List<ProductSummary> results
-@param long totalItems
+@param Integer totalItems
 @param int totalPages
 @param int currentPage
 @param boolean hasNext

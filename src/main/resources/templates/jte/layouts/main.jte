@@ -58,6 +58,40 @@
             document.getElementById('sidebar').classList.add('collapsed');
         }
     });
+
+    // Close search dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+        const searchBar = document.querySelector('.search-bar');
+        const searchDropdown = document.getElementById('search-dropdown');
+
+        if (searchBar && searchDropdown && !searchBar.contains(e.target)) {
+            searchDropdown.innerHTML = '';
+        }
+    });
+
+    // Close search dropdown on ESC key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            const searchDropdown = document.getElementById('search-dropdown');
+            if (searchDropdown) {
+                searchDropdown.innerHTML = '';
+            }
+        }
+    });
+
+    // Clear search dropdown when input is empty
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.querySelector('.search-input');
+        const searchDropdown = document.getElementById('search-dropdown');
+
+        if (searchInput && searchDropdown) {
+            searchInput.addEventListener('input', function() {
+                if (this.value.trim() === '') {
+                    searchDropdown.innerHTML = '';
+                }
+            });
+        }
+    });
 </script>
 
 

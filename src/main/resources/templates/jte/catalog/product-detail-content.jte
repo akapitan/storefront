@@ -40,13 +40,13 @@
 
             <div class="description">${product.description()}</div>
 
-            <!-- Specifications from JSONB attributes -->
+            @* Specifications from JSONB attributes *@
             @if(product.attributes() != null)
                 <table class="specs-table">
                     <caption>Specifications</caption>
                     <tbody>
-                        !{-- Note: This requires a Spring bean to render JsonNode as rows --}
-                        !{-- For now, this will be handled by a custom method or in controller --}
+                        @* Note: This requires a Spring bean to render JsonNode as rows *@
+                        @* For now, this will be handled by a custom method or in controller *@
                     </tbody>
                 </table>
             @endif
