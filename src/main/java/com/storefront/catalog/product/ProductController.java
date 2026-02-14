@@ -39,7 +39,10 @@ class ProductController {
 
     /**
      * Full category browse page.
-     * HTMX requests get only the grid fragment (hx-target="#product-grid").
+     * HTMX requests:
+     *   - targeting #main-content → return "content-wrapper" (SPA navigation)
+     *   - targeting #product-grid → return "grid" (sort/filter updates)
+     * Direct loads get the full page.
      */
     @GetMapping("/category/{categoryId}")
     public String browseCategory(
@@ -63,8 +66,12 @@ class ProductController {
         // Push URL so browser back button works
         HtmxResponse.pushUrl(response, "/catalog/category/" + categoryId + "?page=" + page + "&sort=" + sort);
 
-        // HTMX requests get the grid fragment only; direct loads get the full page
+        // HTMX requests get the appropriate fragment based on target
         if (HtmxResponse.isHtmxRequest(request)) {
+            String target = request.getHeader("HX-Target");
+            if ("main-content".equals(target)) {
+                return "catalog/product-grid :: content-wrapper";
+            }
             return "catalog/product-grid :: grid";
         }
         return "catalog/product-grid";
@@ -135,15 +142,26 @@ class ProductController {
 
     // ─── Product detail ───────────────────────────────────────────────────────
 
+    /**
+     * Full product detail page.
+     * HTMX requests get only the detail fragment (for SPA navigation).
+     * Direct browser loads get the full page with layout.
+     */
     @GetMapping("/product/{sku}")
     public String productDetail(
             @PathVariable String sku,
+            HttpServletRequest request,
             Model model) {
 
         var product = catalogApi.findBySku(sku)
                 .orElseThrow(() -> new ProductNotFoundException(sku));
 
         model.addAttribute("product", product);
+
+        // For HTMX requests, return only the detail content fragment
+        if (HtmxResponse.isHtmxRequest(request)) {
+            return "catalog/product-detail :: detail-content";
+        }
         return "catalog/product-detail";
     }
 

@@ -25,7 +25,7 @@ dependencies {
     // ── Web + Thymeleaf ───────────────────────────────────────────────────────
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
-    implementation("org.thymeleaf.extras:thymeleaf-extras-springsecurity6")
+//    implementation("org.thymeleaf.extras:thymeleaf-extras-springsecurity6")
 // Test
 //    implementation(libs.spring.data.commons)
 
@@ -52,8 +52,8 @@ dependencies {
     implementation("com.github.ben-manes.caffeine:caffeine")
 
     // ── Security + Session ────────────────────────────────────────────────────
-    implementation("org.springframework.boot:spring-boot-starter-security")
-    implementation("org.springframework.session:spring-session-data-redis")
+//    implementation("org.springframework.boot:spring-boot-starter-security")
+//    implementation("org.springframework.session:spring-session-data-redis")
 
     // ── Spring Modulith ───────────────────────────────────────────────────────
 //    implementation("org.springframework.modulith:spring-modulith-starter-core")

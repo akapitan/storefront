@@ -1,28 +1,75 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
-<head>
-    <title>Products</title>
-    <meta charset="UTF-8"/>
-    <script src="https://unpkg.com/htmx.org@2.0.0" defer></script>
-</head>
+<head th:replace="fragments/head :: head('Products')"></head>
 <body>
+
+<!-- Navigation -->
+<header th:replace="fragments/nav :: nav"></header>
 
 <!--
   Full page wrapper — rendered on direct browser loads.
-  HTMX requests get only the "grid" or "cards" fragment below.
+  HTMX requests get only the "content-wrapper" or "cards" fragment below.
 -->
 <main>
-    <div th:replace="~{:: #grid-root}"></div>
+    <div class="container">
+        <div th:replace="~{:: #grid-root}"></div>
+    </div>
 </main>
+
+<!-- Footer -->
+<footer th:replace="fragments/footer :: footer"></footer>
 
 <!--
   ══════════════════════════════════════════════════════════
-  Fragment: grid
+  Fragment: content-wrapper
+  Target:   hx-target="#main-content" (for SPA navigation)
+  Contains: sort controls + the grid fragment
+  ══════════════════════════════════════════════════════════
+-->
+<div id="grid-root" th:fragment="content-wrapper">
+
+    <!-- Sort controls — each option fires an HTMX get that swaps the grid -->
+    <div class="sort-bar">
+        <span>Sort by:</span>
+        <a th:href="@{/catalog/category/{id}(id=${categoryId},sort='default')}"
+           th:classappend="${sort == 'default'} ? 'active'"
+           hx-get="@{/catalog/category/{id}(id=${categoryId},sort='default')}"
+           hx-target="#product-grid"
+           hx-push-url="true">Featured</a>
+
+        <a th:href="@{/catalog/category/{id}(id=${categoryId},sort='price_asc')}"
+           th:classappend="${sort == 'price_asc'} ? 'active'"
+           hx-get="@{/catalog/category/{id}(id=${categoryId},sort='price_asc')}"
+           hx-target="#product-grid"
+           hx-push-url="true">Price ↑</a>
+
+        <a th:href="@{/catalog/category/{id}(id=${categoryId},sort='price_desc')}"
+           th:classappend="${sort == 'price_desc'} ? 'active'"
+           hx-get="@{/catalog/category/{id}(id=${categoryId},sort='price_desc')}"
+           hx-target="#product-grid"
+           hx-push-url="true">Price ↓</a>
+
+        <a th:href="@{/catalog/category/{id}(id=${categoryId},sort='name')}"
+           th:classappend="${sort == 'name'} ? 'active'"
+           hx-get="@{/catalog/category/{id}(id=${categoryId},sort='name')}"
+           hx-target="#product-grid"
+           hx-push-url="true">Name</a>
+    </div>
+
+    <!-- Product cards grid -->
+    <div id="product-grid">
+        <div th:replace="~{:: #cards-root}"></div>
+    </div>
+</div>
+
+<!--
+  ══════════════════════════════════════════════════════════
+  Fragment: grid (for internal swaps within the grid)
   Target:   hx-target="#product-grid"
   Contains: sort controls + the cards fragment
   ══════════════════════════════════════════════════════════
 -->
-<div id="grid-root" th:fragment="grid">
+<div th:fragment="grid">
 
     <!-- Sort controls — each option fires an HTMX get that swaps the grid -->
     <div class="sort-bar">
@@ -81,7 +128,10 @@
         </div>
 
         <!-- Product thumbnail -->
-        <a th:href="@{/catalog/product/{sku}(sku=${product.sku()})}">
+        <a th:href="@{/catalog/product/{sku}(sku=${product.sku()})}"
+           hx-get="@{/catalog/product/{sku}(sku=${product.sku()})}"
+           hx-target="#main-content"
+           hx-push-url="true">
             <img th:if="${product.thumbnailKey() != null}"
                  th:src="@{/assets/images/{key}(key=${product.thumbnailKey()})}"
                  th:alt="${product.name()}"
@@ -92,7 +142,11 @@
         <!-- Product info -->
         <div class="product-info">
             <a th:href="@{/catalog/product/{sku}(sku=${product.sku()})}"
-               th:text="${product.name()}" class="product-name"></a>
+               th:text="${product.name()}"
+               class="product-name"
+               hx-get="@{/catalog/product/{sku}(sku=${product.sku()})}"
+               hx-target="#main-content"
+               hx-push-url="true"></a>
 
             <span th:text="${product.sku()}" class="product-sku"></span>
 

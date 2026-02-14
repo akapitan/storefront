@@ -1,59 +1,40 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="en">
-<head>
-    <title th:text="${product.name()}">Product Detail</title>
-    <meta charset="UTF-8"/>
-    <script src="https://unpkg.com/htmx.org@2.0.0" defer></script>
-</head>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:hx-on="http://www.w3.org/1999/xhtml" lang="en">
+<head th:replace="fragments/head :: head(${product.name()})"></head>
 <body>
+
+<!-- Navigation -->
+<header th:replace="fragments/nav :: nav"></header>
 
 <!--
   Full product detail page.
-  Also contains the "quick-view" fragment used by modal requests.
+  Also contains fragments:
+  - "detail-content" for HTMX SPA navigation
+  - "quick-view" for modal requests
 -->
 
 <main>
-    <div th:replace="~{:: #detail-root}"></div>
+    <div class="container">
+        <div th:replace="~{:: #detail-root}"></div>
+    </div>
 </main>
 
-<!--
-  ══════════════════════════════════════════════════════════
-  Fragment: quick-view
-  Used by: hx-get="/catalog/product/{sku}/quick-view"
-  Target:  #modal-container
-  ══════════════════════════════════════════════════════════
--->
-<div id="detail-root" th:fragment="quick-view" class="product-quick-view">
-    <button class="modal-close"
-            hx-on:click="document.getElementById('modal-container').innerHTML = ''">✕</button>
-
-    <div class="quick-view-inner">
-        <!-- Image -->
-        <div class="quick-view-image">
-            <img th:if="${not #lists.isEmpty(product.imageKeys())}"
-                 th:src="@{/assets/images/{key}(key=${product.imageKeys()[0]})}"
-                 th:alt="${product.name()}" />
-        </div>
-
-        <!-- Info -->
-        <div class="quick-view-info">
-            <h2 th:text="${product.name()}"></h2>
-            <p class="sku" th:text="'SKU: ' + ${product.sku()}"></p>
-            <p class="category" th:text="${product.categoryName()}"></p>
-            <p class="price" th:text="${#numbers.formatCurrency(product.price())}"></p>
-            <p class="description" th:text="${product.description()}"></p>
-
-            <a th:href="@{/catalog/product/{sku}(sku=${product.sku()})}"
-               class="btn-view-full">View full details →</a>
-        </div>
-    </div>
-</div>
+<!-- Footer -->
+<footer th:replace="fragments/footer :: footer"></footer>
 
 <!--
-  Full detail page content (not a fragment — full page render)
+  ══════════════════════════════════════════════════════════
+  Fragment: detail-content
+  Used by: HTMX requests to /catalog/product/{sku}
+  Target:  #main-content (SPA navigation)
+  ══════════════════════════════════════════════════════════
 -->
-<article class="product-detail-page">
+<article id="detail-root" th:fragment="detail-content" class="product-detail-page">
     <nav class="breadcrumb">
+        <a href="/"
+           hx-get="/"
+           hx-target="#main-content"
+           hx-push-url="true">Home</a> /
         <a href="/catalog">Catalog</a> /
         <span th:text="${product.categoryName()}"></span> /
         <span th:text="${product.name()}"></span>
@@ -100,6 +81,42 @@
         </div>
     </section>
 </article>
+
+<!--
+  ══════════════════════════════════════════════════════════
+  Fragment: quick-view
+  Used by: hx-get="/catalog/product/{sku}/quick-view"
+  Target:  #modal-container (modal overlay)
+  ══════════════════════════════════════════════════════════
+-->
+<div th:fragment="quick-view" class="product-quick-view">
+    <button class="modal-close"
+            hx-on:click="document.getElementById('modal-container').innerHTML = ''">✕</button>
+
+    <div class="quick-view-inner">
+        <!-- Image -->
+        <div class="quick-view-image">
+            <img th:if="${not #lists.isEmpty(product.imageKeys())}"
+                 th:src="@{/assets/images/{key}(key=${product.imageKeys()[0]})}"
+                 th:alt="${product.name()}" />
+        </div>
+
+        <!-- Info -->
+        <div class="quick-view-info">
+            <h2 th:text="${product.name()}"></h2>
+            <p class="sku" th:text="'SKU: ' + ${product.sku()}"></p>
+            <p class="category" th:text="${product.categoryName()}"></p>
+            <p class="price" th:text="${#numbers.formatCurrency(product.price())}"></p>
+            <p class="description" th:text="${product.description()}"></p>
+
+            <a th:href="@{/catalog/product/{sku}(sku=${product.sku()})}"
+               hx-get="@{/catalog/product/{sku}(sku=${product.sku()})}"
+               hx-target="#main-content"
+               hx-push-url="true"
+               class="btn-view-full">View full details →</a>
+        </div>
+    </div>
+</div>
 
 </body>
 </html>
