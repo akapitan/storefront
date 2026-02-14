@@ -30,7 +30,7 @@
                            placeholder="Search for products..."
                            autocomplete="off"
                            hx-get="/catalog/search/dropdown"
-                           hx-trigger="input changed delay:300ms[this.value.trim().length > 0]"
+                           hx-trigger="keyup[target.value.length > 0] delay:300ms"
                            hx-target="#search-dropdown"
                            hx-indicator="#search-spinner"/>
                     <span id="search-spinner" class="htmx-indicator">...</span>
