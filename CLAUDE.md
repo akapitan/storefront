@@ -37,6 +37,37 @@ Each module exposes a public API interface and communicates cross-module via dom
 
 Module boundaries are enforced by Spring Modulith — modules must only depend on each other through their public API interfaces and events.
 
+### Hexagonal Architecture
+
+Each public module follows a four-layer hexagonal package structure:
+
+```
+com.storefront.<module>/
+├── interfaces/       # Inbound adapters (controllers, DTOs)
+├── application/      # Use-case orchestration
+├── domain/           # Pure business logic (no framework imports)
+│   ├── model/        # Entities, value objects, repository interfaces, domain events, exceptions
+│   └── shared/       # Base classes (UlidIdentifier, JsonbHelper)
+└── infrastructure/   # Outbound adapters (DB, messaging, external APIs)
+```
+
+**Dependency rule**: `interfaces → application → domain ← infrastructure`. Domain NEVER imports from other layers.
+
+| Layer | Responsibility | Visibility | Spring Stereotypes |
+|-------|---------------|------------|-------------------|
+| `domain/model` | Entities, value objects, repository interfaces, domain events, exceptions | `public` interfaces and models | None |
+| `domain/shared` | Base classes (`UlidIdentifier`, `JsonbHelper`) | `public` | None |
+| `application` | Use-case orchestration, transaction boundaries, event publishing | `public` interfaces, package-private impls | `@Service` |
+| `infrastructure` | Technical adapters (DB, messaging, security, external APIs) | Package-private classes | `@Repository`, `@Configuration` |
+| `interfaces` | REST controllers, request/response DTOs | Package-private classes | `@Controller` |
+
+**Key rules:**
+- Every ID must be a **value object** (e.g., `ProductId`, `CategoryId`, `SkuId`), never a raw `Long`/`String`/`UUID`.
+- **Domain models are separate from jOOQ generated classes.** Infrastructure repositories map between jOOQ records and domain entities.
+- Always prefer **value objects** over primitives for domain concepts (e.g., `Money`, `Quantity`, `Sku`).
+- Repository **interfaces** live in `domain/model`; **implementations** (jOOQ-based) live in `infrastructure`.
+- The module's **public API interface** (e.g., `CatalogApi`) lives at the module root and is the only cross-module entry point.
+
 ### Data Access — jOOQ with Read/Write Splitting
 
 Repositories inject two `DSLContext` instances:
