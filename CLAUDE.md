@@ -1,0 +1,73 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Build & Run Commands
+
+```bash
+# Start infrastructure (PostgreSQL 16, Redis 7)
+docker compose up -d
+
+# Run the application (dev profile)
+./gradlew bootRunDev
+
+# Build
+./gradlew build
+
+# Run tests
+./gradlew test
+
+# Regenerate jOOQ classes from DB schema (requires Docker — spins up a Testcontainers PG)
+./gradlew generateJooqClasses
+```
+
+## Architecture
+
+**Spring Boot 4.0.2 modular monolith** (Spring Modulith) with Java 21 virtual threads, HTMX frontend, and jOOQ data access.
+
+### Module Structure (`com.storefront.*`)
+
+Each module exposes a public API interface and communicates cross-module via domain events:
+
+- **catalog** — Product browsing, search, categories. Public API: `CatalogApi`. Controller: `ProductController`.
+- **inventory** — Stock levels, warehouse locations, reorder rules. Public API: `InventoryApi`. Listens to catalog events.
+- **cart** — Shopping cart (session-based). Public API: `CartApi`.
+- **shared** — Domain primitives (`Money`, `DomainEvent`), pagination types (`Slice`, `Pagination`, `PageRequest`, `SliceRequest`), HTMX utilities (`HtmxResponse`, `TemplateHelpers`), jOOQ converters.
+- **config** — `DataSourceConfig` (primary/replica routing), `CacheConfig` (Caffeine L1 + Redis L2), `JteConfig`.
+
+Module boundaries are enforced by Spring Modulith — modules must only depend on each other through their public API interfaces and events.
+
+### Data Access — jOOQ with Read/Write Splitting
+
+Repositories inject two `DSLContext` instances:
+- `primaryDsl` — for writes
+- `@Qualifier("readOnlyDsl")` — for reads, routed to replica via `AbstractRoutingDataSource`
+
+Generated jOOQ classes live in `src/generated/java` (package `com.storefront.jooq`), generated from Flyway migrations in `src/main/resources/db/migration/`.
+
+### Frontend — JTE + HTMX
+
+Templates in `src/main/resources/templates/jte/`. Controllers return fragment-only templates for HTMX requests (detected via `HX-Request` header) and full-page templates otherwise:
+
+```java
+if (HtmxResponse.isHtmxRequest(request)) {
+    return "catalog/product-grid-content";  // fragment
+}
+return "catalog/product-grid";              // full page with layout
+```
+
+Patterns used: partial page swaps, `hx-push-url` for history, `hx-trigger="revealed"` for infinite scroll, debounced search input.
+
+### Caching — Two-Layer
+
+- **L1 (Caffeine):** In-JVM, short TTL (categories 1h, product detail 2min)
+- **L2 (Redis):** Distributed, longer TTL (product detail 5min, listings/search 30s, inventory 15s)
+
+### Database
+
+PostgreSQL with full-text search (`tsvector` + trigram indexes), JSONB product attributes, materialized views for category counts. Flyway manages migrations.
+
+### Pagination Convention
+
+- **Slice** (no COUNT query, fetches N+1 rows) — used for infinite scroll
+- **Pagination** (includes total count) — used for search results with page numbers
