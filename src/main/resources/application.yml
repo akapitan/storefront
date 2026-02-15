@@ -126,9 +126,6 @@ spring:
     activate:
       on-profile: prod
 
-  thymeleaf:
-    cache: true
-
 logging:
   level:
     com.storefront: INFO

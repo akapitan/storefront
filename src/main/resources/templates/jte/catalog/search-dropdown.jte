@@ -1,7 +1,7 @@
-@import com.storefront.catalog.CatalogApi.ProductSummary
+@import com.storefront.catalog.CatalogApi.ProductGroupSummary
 @import java.util.List
 
-@param List<ProductSummary> results
+@param List<ProductGroupSummary> results
 @param int totalItems
 @param String query
 
@@ -12,15 +12,15 @@
         </div>
 
         <div class="search-dropdown-items">
-            @for(var product : results)
-                <a href="/catalog/product/${product.sku()}"
+            @for(var group : results)
+                <a href="/catalog/product/${group.slug()}"
                    class="search-dropdown-item"
-                   hx-get="/catalog/product/${product.sku()}"
+                   hx-get="/catalog/product/${group.slug()}"
                    hx-target="#main-content"
                    hx-push-url="true">
-                    @if(product.thumbnailKey() != null)
-                        <img src="/assets/images/${product.thumbnailKey()}"
-                             alt="${product.name()}"
+                    @if(group.overviewImageUrl() != null)
+                        <img src="${group.overviewImageUrl()}"
+                             alt="${group.name()}"
                              class="search-item-thumbnail"/>
                     @else
                         <div class="search-item-thumbnail-placeholder">
@@ -29,9 +29,13 @@
                     @endif
 
                     <div class="search-item-info">
-                        <div class="search-item-name">${product.name()}</div>
-                        <div class="search-item-sku">SKU: ${product.sku()}</div>
-                        <div class="search-item-price">${com.storefront.shared.web.TemplateHelpers.formatCurrency(product.price())}</div>
+                        <div class="search-item-name">${group.name()}</div>
+                        @if(group.subtitle() != null)
+                            <div class="search-item-sku">${group.subtitle()}</div>
+                        @endif
+                        @if(group.minPriceUsd() != null)
+                            <div class="search-item-price">from ${com.storefront.shared.web.TemplateHelpers.formatCurrency(group.minPriceUsd())}</div>
+                        @endif
                     </div>
                 </a>
             @endfor
@@ -44,7 +48,7 @@
                    hx-get="/catalog/search?q=${query}"
                    hx-target="#main-content"
                    hx-push-url="true">
-                    View all ${totalItems} results →
+                    View all ${totalItems} results
                 </a>
             </div>
         @endif
@@ -57,4 +61,3 @@
         </div>
     </div>
 @endif
-

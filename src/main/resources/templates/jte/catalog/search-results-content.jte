@@ -1,8 +1,8 @@
-@import com.storefront.catalog.CatalogApi.ProductSummary
+@import com.storefront.catalog.CatalogApi.ProductGroupSummary
 @import java.util.List
 
-@param List<ProductSummary> results
-@param Integer totalItems
+@param List<ProductGroupSummary> results
+@param int totalItems
 @param int totalPages
 @param int currentPage
 @param boolean hasNext
@@ -14,34 +14,39 @@
     <p>${totalItems} results found</p>
 
     @if(!results.isEmpty())
-        <div class="product-grid">
-            @for(var product : results)
-                <div class="product-card">
-                    <a href="/catalog/product/${product.sku()}"
-                       hx-get="/catalog/product/${product.sku()}"
-                       hx-target="#main-content"
-                       hx-push-url="true">
-                        @if(product.thumbnailKey() != null)
-                            <img src="/assets/images/${product.thumbnailKey()}"
-                                 alt="${product.name()}"
-                                 loading="lazy"/>
-                        @else
-                            <div class="no-image">No image</div>
+        <div class="product-group-grid">
+            @for(var group : results)
+                <a href="/catalog/product/${group.slug()}"
+                   class="product-group-card"
+                   hx-get="/catalog/product/${group.slug()}"
+                   hx-target="#main-content"
+                   hx-push-url="true">
+                    @if(group.overviewImageUrl() != null)
+                        <img src="${group.overviewImageUrl()}"
+                             alt="${group.name()}"
+                             loading="lazy"/>
+                    @else
+                        <div class="no-image">No image</div>
+                    @endif
+
+                    <div class="product-group-card-info">
+                        <div class="product-group-card-name">${group.name()}</div>
+                        @if(group.subtitle() != null)
+                            <div class="product-group-card-subtitle">${group.subtitle()}</div>
                         @endif
-                    </a>
-
-                    <div class="product-info">
-                        <a href="/catalog/product/${product.sku()}"
-                           class="product-name"
-                           hx-get="/catalog/product/${product.sku()}"
-                           hx-target="#main-content"
-                           hx-push-url="true">${product.name()}</a>
-
-                        <span class="product-sku">${product.sku()}</span>
-
-                        <span class="product-price">${com.storefront.shared.web.TemplateHelpers.formatCurrency(product.price())}</span>
+                        <div class="product-group-card-meta">
+                            <span class="product-group-card-count">${group.skuCount()} products</span>
+                            @if(group.minPriceUsd() != null)
+                                <span class="product-group-card-price">from ${com.storefront.shared.web.TemplateHelpers.formatCurrency(group.minPriceUsd())}</span>
+                            @endif
+                        </div>
+                        @if(group.anyInStock())
+                            <span class="stock-badge stock-in">In Stock</span>
+                        @else
+                            <span class="stock-badge stock-out">Out of Stock</span>
+                        @endif
                     </div>
-                </div>
+                </a>
             @endfor
         </div>
 
@@ -71,4 +76,3 @@
         </div>
     @endif
 </div>
-

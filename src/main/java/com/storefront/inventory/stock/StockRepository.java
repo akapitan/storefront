@@ -14,10 +14,6 @@ import java.util.UUID;
 import static com.storefront.jooq.tables.Inventory.INVENTORY;
 
 
-/**
- * StockRepository — all inventory SQL via jOOQ.
- * Package-private: only StockService may use this directly.
- */
 @Repository
 class StockRepository {
 
@@ -33,14 +29,14 @@ class StockRepository {
 
     // ─── Reads ────────────────────────────────────────────────────────────────
 
-    @Cacheable(value = "inventory", cacheManager = "redisCacheManager", key = "#productId")
+    @Cacheable(value = "inventory", cacheManager = "redisCacheManager", key = "#skuId")
     @Transactional(readOnly = true)
-    Optional<StockLevel> findByProductId(UUID productId) {
+    Optional<StockLevel> findBySkuId(UUID skuId) {
         return readOnlyDsl
                 .selectFrom(INVENTORY)
-                .where(INVENTORY.PRODUCT_ID.eq(productId))
+                .where(INVENTORY.SKU_ID.eq(skuId))
                 .fetchOptional(r -> new StockLevel(
-                        r.getProductId(),
+                        r.getSkuId(),
                         r.getQuantity(),
                         r.getWarehouseLocation(),
                         r.getQuantity() <= r.getReorderPoint()
@@ -48,84 +44,69 @@ class StockRepository {
     }
 
     @Transactional(readOnly = true)
-    boolean isInStock(UUID productId) {
+    boolean isInStock(UUID skuId) {
         return readOnlyDsl.fetchExists(
                 INVENTORY,
-                INVENTORY.PRODUCT_ID.eq(productId).and(INVENTORY.QUANTITY.gt(0)));
+                INVENTORY.SKU_ID.eq(skuId).and(INVENTORY.QUANTITY.gt(0)));
     }
 
     // ─── Writes ───────────────────────────────────────────────────────────────
 
-    /**
-     * Initialise a stock record for a newly created product.
-     * Called by StockService when it receives a ProductCreated event.
-     */
-    @CacheEvict(value = "inventory", cacheManager = "redisCacheManager", key = "#productId")
+    @CacheEvict(value = "inventory", cacheManager = "redisCacheManager", key = "#skuId")
     @Transactional
-    void initialize(UUID productId) {
+    void initialize(UUID skuId) {
         primaryDsl
                 .insertInto(INVENTORY)
-                .set(INVENTORY.PRODUCT_ID, productId)
+                .set(INVENTORY.SKU_ID, skuId)
                 .set(INVENTORY.QUANTITY, 0)
                 .set(INVENTORY.REORDER_POINT, 10)
-                .onConflict(INVENTORY.PRODUCT_ID)
-                .doNothing()   // idempotent — safe to call multiple times
+                .onConflict(INVENTORY.SKU_ID)
+                .doNothing()
                 .execute();
     }
 
-    /**
-     * Atomically decrement stock quantity.
-     * Uses a conditional UPDATE with a check constraint to prevent negatives.
-     * Returns the new quantity, or -1 if insufficient stock.
-     */
-    @CacheEvict(value = "inventory", cacheManager = "redisCacheManager", key = "#productId")
+    @CacheEvict(value = "inventory", cacheManager = "redisCacheManager", key = "#skuId")
     @Transactional
-    int decrementQuantity(UUID productId, int amount) {
+    int decrementQuantity(UUID skuId, int amount) {
         int updated = primaryDsl
                 .update(INVENTORY)
                 .set(INVENTORY.QUANTITY, INVENTORY.QUANTITY.minus(amount))
-                .where(INVENTORY.PRODUCT_ID.eq(productId))
-                .and(INVENTORY.QUANTITY.ge(amount))  // prevent going below 0
+                .where(INVENTORY.SKU_ID.eq(skuId))
+                .and(INVENTORY.QUANTITY.ge(amount))
                 .execute();
 
-        if (updated == 0) return -1; // insufficient stock
+        if (updated == 0) return -1;
 
         return primaryDsl
                 .select(INVENTORY.QUANTITY)
                 .from(INVENTORY)
-                .where(INVENTORY.PRODUCT_ID.eq(productId))
+                .where(INVENTORY.SKU_ID.eq(skuId))
                 .fetchOne(INVENTORY.QUANTITY);
     }
 
-    /**
-     * Atomically increment stock quantity (release reservation or replenishment).
-     */
-    @CacheEvict(value = "inventory", cacheManager = "redisCacheManager", key = "#productId")
+    @CacheEvict(value = "inventory", cacheManager = "redisCacheManager", key = "#skuId")
     @Transactional
-    int incrementQuantity(UUID productId, int amount) {
+    int incrementQuantity(UUID skuId, int amount) {
         primaryDsl
                 .update(INVENTORY)
                 .set(INVENTORY.QUANTITY, INVENTORY.QUANTITY.plus(amount))
-                .where(INVENTORY.PRODUCT_ID.eq(productId))
+                .where(INVENTORY.SKU_ID.eq(skuId))
                 .execute();
 
         return primaryDsl
                 .select(INVENTORY.QUANTITY)
                 .from(INVENTORY)
-                .where(INVENTORY.PRODUCT_ID.eq(productId))
+                .where(INVENTORY.SKU_ID.eq(skuId))
                 .fetchOne(INVENTORY.QUANTITY);
     }
 
-    /**
-     * Soft-archive an inventory record (product deactivated).
-     */
-    @CacheEvict(value = "inventory", cacheManager = "redisCacheManager", key = "#productId")
+    @CacheEvict(value = "inventory", cacheManager = "redisCacheManager", key = "#skuId")
     @Transactional
-    void archive(UUID productId) {
+    void archive(UUID skuId) {
         primaryDsl
                 .update(INVENTORY)
                 .set(INVENTORY.QUANTITY, 0)
-                .where(INVENTORY.PRODUCT_ID.eq(productId))
+                .where(INVENTORY.SKU_ID.eq(skuId))
                 .execute();
     }
 }

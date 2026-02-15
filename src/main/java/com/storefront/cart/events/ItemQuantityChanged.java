@@ -10,8 +10,7 @@ import java.util.UUID;
 public record ItemQuantityChanged(
         UUID cartId,
         UUID itemId,
-        UUID productId,
+        UUID skuId,
         int  previousQuantity,
         int  newQuantity
 ) implements DomainEvent {}
-

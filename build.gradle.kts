@@ -32,7 +32,8 @@ dependencies {
 
     // ── Database ─────────────────────────────────────────────────────────────
     runtimeOnly("org.postgresql:postgresql")
-    implementation("org.flywaydb:flyway-core")
+    implementation("org.springframework.boot:spring-boot-starter-flyway")
+//    implementation("org.flywaydb:flyway-core")
     implementation("org.flywaydb:flyway-database-postgresql")
 
     // ── Caching: Redis (L2) + Caffeine (L1) ──────────────────────────────────
@@ -95,7 +96,7 @@ tasks.withType<JavaCompile> {
 // ./gradlew bootRunDev  — starts app with 'dev' profile
 tasks.register<JavaExec>("bootRunDev") {
     group = "application"
-    description = "Run with Spring profile 'dev' (verbose SQL logging, Thymeleaf cache off)"
+    description = "Run with Spring profile 'dev' (verbose SQL logging, JTE templates reloading, etc.)"
     classpath = sourceSets.main.get().runtimeClasspath
     mainClass = "com.storefront.StorefrontApplication"
     systemProperty("spring.profiles.active", "dev")

@@ -6,14 +6,13 @@ import java.math.BigDecimal;
 import java.util.UUID;
 
 /**
- * ItemAdded — published when a product is added to cart or quantity increased.
+ * ItemAdded — published when a SKU is added to cart or quantity increased.
  */
 public record ItemAdded(
         UUID       cartId,
         UUID       itemId,
-        UUID       productId,
-        String     productSku,
+        UUID       skuId,
+        String     partNumber,
         int        quantity,
         BigDecimal unitPrice
 ) implements DomainEvent {}
-

@@ -6,7 +6,7 @@ import java.util.UUID;
 
 /** Published when stock quantity changes for any reason. */
 public record StockUpdated(
-        UUID productId,
+        UUID skuId,
         int  previousQuantity,
         int  newQuantity
 ) implements DomainEvent {}

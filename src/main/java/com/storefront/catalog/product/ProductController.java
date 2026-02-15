@@ -7,29 +7,14 @@ import com.storefront.shared.web.HtmxResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.UUID;
+import java.math.BigDecimal;
+import java.util.*;
 
-/**
- * ProductController — HTMX-driven product catalog endpoints.
- *
- * All endpoints return either a full page or a Thymeleaf fragment
- * depending on whether the request is from HTMX or a direct browser load.
- *
- * Template naming convention:
- *   "catalog/product-grid-content"    → renders content area only
- *   "catalog/product-cards"           → renders cards for infinite scroll
- *   "catalog/product-detail"          → full page render
- *   "catalog/product-detail-content"  → detail content only
- *
- * HTMX patterns used:
- *   hx-get + hx-target   → swap product grid on filter change
- *   hx-push-url          → update browser URL without full navigation
- *   hx-trigger="revealed" on last card → infinite scroll trigger
- */
 @Controller
 @RequestMapping("/catalog")
 @RequiredArgsConstructor
@@ -37,108 +22,148 @@ class ProductController {
 
     private final CatalogApi catalogApi;
 
-    // ─── Product grid (category browse) ──────────────────────────────────────
+    // ─── Sidebar categories ───────────────────────────────────────────────────
 
-    /**
-     * Full category browse page.
-     * HTMX requests:
-     *   - targeting #main-content → return "content-wrapper" (SPA navigation)
-     *   - targeting #product-grid → return "grid" (sort/filter updates)
-     * Direct loads get the full page.
-     */
-    @GetMapping("/category/{categoryId}")
+    @GetMapping("/categories/top-level")
+    public String topLevelCategories(Model model) {
+        var categories = catalogApi.findTopLevelCategories();
+        model.addAttribute("categories", categories);
+        return "catalog/top-level-categories";
+    }
+
+    // ─── Category browse ───────────────────────────────────────────────────────
+
+    @GetMapping("/category/{slug}")
     public String browseCategory(
-            @PathVariable UUID categoryId,
-            @RequestParam(defaultValue = "0")    int    page,
-            @RequestParam(defaultValue = "48")   int    size,
-            @RequestParam(defaultValue = "default") String sort,
+            @PathVariable String slug,
+            @RequestParam(defaultValue = "0")  int page,
+            @RequestParam(defaultValue = "48") int size,
             HttpServletRequest  request,
             HttpServletResponse response,
             Model model) {
 
-        var sliceRequest = SliceRequest.of(page, size, sort);
-        var slice        = catalogApi.browseByCategory(categoryId, sliceRequest);
+        var category = catalogApi.findCategoryBySlug(slug)
+                .orElseThrow(() -> new CategoryNotFoundException(slug));
 
-        model.addAttribute("products",  slice.items());
-        model.addAttribute("hasMore",   slice.hasMore());
-        model.addAttribute("nextPage",  page + 1);
-        model.addAttribute("sort",      sort);
-        model.addAttribute("categoryId", categoryId);
+        var sliceRequest = SliceRequest.of(page, size);
+        var slice = catalogApi.browseByCategory(category.path(), sliceRequest);
+        var children = catalogApi.findChildCategories(category.id());
+        var breadcrumb = catalogApi.findBreadcrumb(category.path());
 
-        // Push URL so browser back button works
-        HtmxResponse.pushUrl(response, "/catalog/category/" + categoryId + "?page=" + page + "&sort=" + sort);
+        model.addAttribute("category", category);
+        model.addAttribute("groups", slice.items());
+        model.addAttribute("hasMore", slice.hasMore());
+        model.addAttribute("nextPage", page + 1);
+        model.addAttribute("children", children);
+        model.addAttribute("breadcrumb", breadcrumb);
 
-        // HTMX requests get the content template
+        HtmxResponse.pushUrl(response, "/catalog/category/" + slug + "?page=" + page);
+
         if (HtmxResponse.isHtmxRequest(request)) {
-            return "catalog/product-grid-content";
+            return "catalog/category-browse-content";
         }
-        return "catalog/product-grid";
+        return "catalog/category-browse";
     }
 
-    // ─── Infinite scroll — next slice ─────────────────────────────────────────
-
-    /**
-     * Called by HTMX when the last product card enters the viewport.
-     * hx-trigger="revealed" on the last card triggers this endpoint.
-     * Returns only the next batch of product cards (no surrounding layout).
-     */
-    @GetMapping("/category/{categoryId}/more")
-    public String loadMore(
-            @PathVariable UUID categoryId,
-            @RequestParam int  page,
-            @RequestParam(defaultValue = "48")   int    size,
-            @RequestParam(defaultValue = "default") String sort,
+    @GetMapping("/category/{slug}/children")
+    public String categoryChildren(
+            @PathVariable String slug,
             Model model) {
 
-        var sliceRequest = SliceRequest.of(page, size, sort);
-        var slice        = catalogApi.browseByCategory(categoryId, sliceRequest);
+        var category = catalogApi.findCategoryBySlug(slug)
+                .orElseThrow(() -> new CategoryNotFoundException(slug));
 
-        model.addAttribute("products",  slice.items());
-        model.addAttribute("hasMore",   slice.hasMore());
-        model.addAttribute("nextPage",  page + 1);
-        model.addAttribute("sort",      sort);
-        return "catalog/product-cards";
-
+        var children = catalogApi.findChildCategories(category.id());
+        model.addAttribute("children", children);
+        return "catalog/category-children";
     }
 
-    // ─── Product search ───────────────────────────────────────────────────────
+    // ─── Product group page ────────────────────────────────────────────────────
 
-    /**
-     * Search dropdown — instant search results as you type.
-     * Returns a dropdown with top matching products.
-     */
+    @GetMapping("/product/{slug}")
+    public String productGroup(
+            @PathVariable String slug,
+            HttpServletRequest request,
+            Model model) {
+
+        var group = catalogApi.findProductGroupBySlug(slug)
+                .orElseThrow(() -> new ProductGroupNotFoundException(slug));
+
+        var columns = catalogApi.findColumnConfig(group.id());
+        var breadcrumb = catalogApi.findBreadcrumb(group.categoryPath());
+
+        // Initial load: all SKUs (no filters)
+        var allSkuIds = catalogApi.findMatchingSkuIds(group.id(), Map.of(), Map.of());
+        var skuRows = catalogApi.findVariantTable(group.id(), allSkuIds);
+        var facets = catalogApi.findFacetCounts(group.id(), allSkuIds);
+
+        model.addAttribute("group", group);
+        model.addAttribute("columns", columns);
+        model.addAttribute("breadcrumb", breadcrumb);
+        model.addAttribute("skuRows", skuRows);
+        model.addAttribute("facets", facets);
+
+        if (HtmxResponse.isHtmxRequest(request)) {
+            return "catalog/product-group-content";
+        }
+        return "catalog/product-group";
+    }
+
+    @GetMapping("/product/{slug}/filter")
+    public String filterProductGroup(
+            @PathVariable String slug,
+            @RequestParam Map<String, String> allParams,
+            Model model) {
+
+        var group = catalogApi.findProductGroupBySlug(slug)
+                .orElseThrow(() -> new ProductGroupNotFoundException(slug));
+
+        var columns = catalogApi.findColumnConfig(group.id());
+
+        // Parse filter params into enum and range filters
+        Map<Integer, List<Integer>> enumFilters = new HashMap<>();
+        Map<Integer, CatalogApi.NumericRange> rangeFilters = new HashMap<>();
+        parseFilterParams(allParams, enumFilters, rangeFilters);
+
+        var matchingSkuIds = catalogApi.findMatchingSkuIds(group.id(), enumFilters, rangeFilters);
+        var skuRows = catalogApi.findVariantTable(group.id(), matchingSkuIds);
+        var facets = catalogApi.findFacetCounts(group.id(), matchingSkuIds);
+
+        model.addAttribute("group", group);
+        model.addAttribute("columns", columns);
+        model.addAttribute("skuRows", skuRows);
+        model.addAttribute("facets", facets);
+        model.addAttribute("activeFilters", allParams);
+
+        return "catalog/product-group-filtered";
+    }
+
+    // ─── Search ────────────────────────────────────────────────────────────────
+
     @GetMapping("/search/dropdown")
     public String searchDropdown(
             @RequestParam(defaultValue = "") String q,
             Model model,
             HttpServletResponse response) {
 
-        // Return nothing for empty queries
         if (q.isBlank()) {
             response.setStatus(HttpServletResponse.SC_NO_CONTENT);
             return null;
         }
 
-        // Show hint for queries with only 1 character
         if (q.length() < 2) {
             return "catalog/search-dropdown-empty";
         }
 
-        // Limit to top 10 results for dropdown
-        var pageRequest = PageRequest.of(0, 10, "relevance");
-        var results     = catalogApi.search(q, pageRequest);
+        var results = catalogApi.searchDropdown(q, 10);
 
-        model.addAttribute("results", results.items());
-        model.addAttribute("totalItems", results.totalItems());
+        model.addAttribute("results", results);
+        model.addAttribute("totalItems", results.size());
         model.addAttribute("query", q);
 
         return "catalog/search-dropdown";
     }
 
-    /**
-     * Full-text product search.
-     * HTMX: triggered on input with hx-trigger="input changed delay:300ms".
-     */
     @GetMapping("/search")
     public String search(
             @RequestParam(defaultValue = "") String q,
@@ -149,17 +174,17 @@ class ProductController {
             Model model) {
 
         var pageRequest = PageRequest.of(page, size, "relevance");
-        var results     = q.isBlank()
-                ? com.storefront.shared.Pagination.<CatalogApi.ProductSummary>empty(pageRequest)
+        var results = q.isBlank()
+                ? com.storefront.shared.Pagination.<CatalogApi.ProductGroupSummary>empty(pageRequest)
                 : catalogApi.search(q, pageRequest);
 
-        model.addAttribute("results",     results.items());
-        model.addAttribute("totalItems",  results.totalItems());
-        model.addAttribute("totalPages",  results.totalPages());
+        model.addAttribute("results", results.items());
+        model.addAttribute("totalItems", results.totalItems());
+        model.addAttribute("totalPages", results.totalPages());
         model.addAttribute("currentPage", results.page());
-        model.addAttribute("hasNext",     results.hasNext());
-        model.addAttribute("hasPrev",     results.hasPrevious());
-        model.addAttribute("query",       q);
+        model.addAttribute("hasNext", results.hasNext());
+        model.addAttribute("hasPrev", results.hasPrevious());
+        model.addAttribute("query", q);
 
         HtmxResponse.pushUrl(response, "/catalog/search?q=" + q + "&page=" + page);
 
@@ -169,50 +194,56 @@ class ProductController {
         return "catalog/search-results";
     }
 
-    // ─── Product detail ───────────────────────────────────────────────────────
+    // ─── Filter param parser ───────────────────────────────────────────────────
 
-    /**
-     * Full product detail page.
-     * HTMX requests get only the detail fragment (for SPA navigation).
-     * Direct browser loads get the full page with layout.
-     */
-    @GetMapping("/product/{sku}")
-    public String productDetail(
-            @PathVariable String sku,
-            HttpServletRequest request,
-            Model model) {
+    private void parseFilterParams(Map<String, String> params,
+                                    Map<Integer, List<Integer>> enumFilters,
+                                    Map<Integer, CatalogApi.NumericRange> rangeFilters) {
+        for (var entry : params.entrySet()) {
+            String key = entry.getKey();
+            String value = entry.getValue();
 
-        var product = catalogApi.findBySku(sku)
-                .orElseThrow(() -> new ProductNotFoundException(sku));
+            if (key.startsWith("enum_") && !value.isBlank()) {
+                try {
+                    int attrId = Integer.parseInt(key.substring(5));
+                    List<Integer> optionIds = Arrays.stream(value.split(","))
+                            .map(String::trim)
+                            .filter(s -> !s.isEmpty())
+                            .map(Integer::parseInt)
+                            .toList();
+                    if (!optionIds.isEmpty()) {
+                        enumFilters.put(attrId, optionIds);
+                    }
+                } catch (NumberFormatException ignored) {}
+            }
 
-        model.addAttribute("product", product);
-
-        // For HTMX requests, return only the detail content template
-        if (HtmxResponse.isHtmxRequest(request)) {
-            return "catalog/product-detail-content";
+            if (key.startsWith("range_min_") && !value.isBlank()) {
+                try {
+                    int attrId = Integer.parseInt(key.substring(10));
+                    BigDecimal min = new BigDecimal(value);
+                    String maxKey = "range_max_" + attrId;
+                    BigDecimal max = params.containsKey(maxKey)
+                            ? new BigDecimal(params.get(maxKey))
+                            : new BigDecimal("999999");
+                    rangeFilters.put(attrId, new CatalogApi.NumericRange(min, max));
+                } catch (NumberFormatException ignored) {}
+            }
         }
-        return "catalog/product-detail";
     }
 
-    // ─── Quick-view (HTMX modal fragment) ────────────────────────────────────
+    // ─── Exceptions ────────────────────────────────────────────────────────────
 
-    /**
-     * Returns a product quick-view template for HTMX modal.
-     * Triggered by hx-get on a product card's "Quick view" button.
-     */
-    @GetMapping("/product/{sku}/quick-view")
-    public String quickView(@PathVariable String sku, Model model) {
-        var product = catalogApi.findBySku(sku)
-                .orElseThrow(() -> new ProductNotFoundException(sku));
-        model.addAttribute("product", product);
-        return "catalog/product-quick-view";
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    static class CategoryNotFoundException extends RuntimeException {
+        CategoryNotFoundException(String slug) {
+            super("Category not found: " + slug);
+        }
     }
 
-    // ─── Exception ────────────────────────────────────────────────────────────
-
-    static class ProductNotFoundException extends RuntimeException {
-        ProductNotFoundException(String sku) {
-            super("Product not found: " + sku);
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    static class ProductGroupNotFoundException extends RuntimeException {
+        ProductGroupNotFoundException(String slug) {
+            super("Product group not found: " + slug);
         }
     }
 }

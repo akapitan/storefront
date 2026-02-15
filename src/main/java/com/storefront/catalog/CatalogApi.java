@@ -5,74 +5,156 @@ import com.storefront.shared.PageRequest;
 import com.storefront.shared.Slice;
 import com.storefront.shared.SliceRequest;
 
+import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 /**
  * CatalogApi — the ONLY public contract of the Catalog module.
- * ═════════════════════════════════════════════════════════════
  *
- * Other modules (Inventory, future Order module, etc.) interact with
- * Catalog exclusively through this interface. They must NEVER import
- * from com.storefront.catalog.product.* or com.storefront.catalog.category.*
- *
- * Spring Modulith enforces this: accessing internal packages from outside
- * the module will fail the @ApplicationModuleTest boundary verification.
- *
- * Implementation: CatalogService (package-private to catalog module).
+ * Other modules (Inventory, Cart, future Order module, etc.) interact with
+ * Catalog exclusively through this interface.
  */
 public interface CatalogApi {
 
-    /**
-     * Find a product by its SKU.
-     * Returns empty if the product does not exist or is inactive.
-     */
-    Optional<ProductDetail> findBySku(String sku);
+    // ─── Category navigation ───────────────────────────────────────────────────
 
-    /**
-     * Find a product by its internal ID.
-     * Returns empty if the product does not exist or is inactive.
-     */
-    Optional<ProductDetail> findById(UUID productId);
+    List<CategoryNode> findTopLevelCategories();
 
-    /**
-     * Browse active products in a category.
-     * Uses {@link Slice} — no COUNT(*) — suitable for infinite scroll.
-     */
-    Slice<ProductSummary> browseByCategory(UUID categoryId, SliceRequest request);
+    List<CategoryNode> findChildCategories(int parentId);
 
-    /**
-     * Search products by keyword.
-     * Uses {@link Pagination} — returns total count for result headers.
-     */
-    Pagination<ProductSummary> search(String query, PageRequest request);
+    List<CategoryBreadcrumb> findBreadcrumb(String categoryPath);
 
-    /**
-     * Check whether a product exists and is active.
-     * Used by Inventory before initialising a stock record.
-     */
-    boolean existsAndActive(UUID productId);
+    Optional<CategoryNode> findCategoryBySlug(String slug);
 
-    // ─── Projection records (public — used by callers of CatalogApi) ──────────
+    // ─── Product group browse ──────────────────────────────────────────────────
 
-    record ProductSummary(
-            UUID   id,
-            String sku,
+    Slice<ProductGroupSummary> browseByCategory(String categoryPath, SliceRequest request);
+
+    Optional<ProductGroupDetail> findProductGroupBySlug(String slug);
+
+    // ─── Search ────────────────────────────────────────────────────────────────
+
+    Pagination<ProductGroupSummary> search(String query, PageRequest request);
+
+    List<ProductGroupSummary> searchDropdown(String query, int limit);
+
+    // ─── SKU queries ───────────────────────────────────────────────────────────
+
+    List<SkuRow> findVariantTable(UUID groupId, List<UUID> matchingSkuIds);
+
+    List<UUID> findMatchingSkuIds(UUID groupId, java.util.Map<Integer, List<Integer>> enumFilters,
+                                  java.util.Map<Integer, NumericRange> rangeFilters);
+
+    Optional<SkuRow> findSkuByPartNumber(String partNumber);
+
+    // ─── Column config ─────────────────────────────────────────────────────────
+
+    List<ColumnConfig> findColumnConfig(UUID groupId);
+
+    // ─── Filter facets ─────────────────────────────────────────────────────────
+
+    List<FacetGroup> findFacetCounts(UUID groupId, List<UUID> matchingSkuIds);
+
+    // ─── Cross-module checks ───────────────────────────────────────────────────
+
+    boolean skuExistsAndActive(UUID skuId);
+
+    Optional<SkuPriceInfo> findSkuPriceInfo(UUID skuId, int quantity);
+
+    // ─── Projection records ────────────────────────────────────────────────────
+
+    record CategoryNode(
+            int id,
             String name,
-            java.math.BigDecimal price,
-            String thumbnailKey,
-            String categoryName
+            String slug,
+            String path,
+            int groupCount,
+            boolean isLeaf,
+            short sortOrder
     ) {}
 
-    record ProductDetail(
-            UUID   id,
-            String sku,
+    record CategoryBreadcrumb(
+            int id,
             String name,
+            String slug
+    ) {}
+
+    record ProductGroupSummary(
+            UUID id,
+            String name,
+            String subtitle,
+            String slug,
+            String overviewImageUrl,
+            int skuCount,
+            BigDecimal minPriceUsd,
+            boolean anyInStock
+    ) {}
+
+    record ProductGroupDetail(
+            UUID id,
+            String name,
+            String subtitle,
+            String slug,
             String description,
-            java.math.BigDecimal price,
+            String engineeringNote,
+            String overviewImageUrl,
+            String diagramImageUrl,
+            int skuCount,
+            BigDecimal minPriceUsd,
+            boolean anyInStock,
+            int categoryId,
             String categoryName,
-            UUID   categoryId,
-            com.fasterxml.jackson.databind.JsonNode attributes,
-            java.util.List<String> imageKeys
+            String categoryPath
+    ) {}
+
+    record SkuRow(
+            UUID id,
+            String partNumber,
+            org.jooq.JSONB specsJsonb,
+            String sellUnit,
+            int sellQty,
+            boolean inStock,
+            BigDecimal price1ea,
+            String priceTiersJson
+    ) {}
+
+    record ColumnConfig(
+            int sortOrder,
+            String role,
+            String header,
+            int widthPx,
+            String key,
+            String unitLabel,
+            String dataType,
+            String filterWidget,
+            int filterSortOrder,
+            boolean isFilterable
+    ) {}
+
+    record FacetGroup(
+            int attributeId,
+            String key,
+            String label,
+            String filterWidget,
+            String unitLabel,
+            List<FacetOption> options
+    ) {}
+
+    record FacetOption(
+            Integer optionId,
+            String value,
+            String displayValue,
+            int skuCount
+    ) {}
+
+    record NumericRange(BigDecimal min, BigDecimal max) {}
+
+    record SkuPriceInfo(
+            UUID skuId,
+            String partNumber,
+            BigDecimal unitPrice,
+            String sellUnit
     ) {}
 }

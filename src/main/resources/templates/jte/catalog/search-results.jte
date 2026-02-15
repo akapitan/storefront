@@ -1,7 +1,7 @@
-@import com.storefront.catalog.CatalogApi.ProductSummary
+@import com.storefront.catalog.CatalogApi.ProductGroupSummary
 @import java.util.List
 
-@param List<ProductSummary> results
+@param List<ProductGroupSummary> results
 @param int totalItems
 @param int totalPages
 @param int currentPage
@@ -23,5 +23,3 @@
         )
     `
 )
-
-

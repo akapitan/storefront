@@ -5,11 +5,10 @@ import com.storefront.shared.DomainEvent;
 import java.util.UUID;
 
 /**
- * ItemRemoved — published when a product is removed from cart.
+ * ItemRemoved — published when a SKU is removed from cart.
  */
 public record ItemRemoved(
         UUID cartId,
         UUID itemId,
-        UUID productId
+        UUID skuId
 ) implements DomainEvent {}
-

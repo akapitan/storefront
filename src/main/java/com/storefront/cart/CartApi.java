@@ -8,36 +8,18 @@ import java.util.UUID;
 
 /**
  * CartApi — the ONLY public contract of the Cart module.
- * ═══════════════════════════════════════════════════════════
  *
  * Other modules (Order, future Promotion, etc.) interact with
- * Cart exclusively through this interface. They must NEVER import
- * from com.storefront.cart.* internal packages.
- *
- * Implementation: CartService (package-private to cart module).
+ * Cart exclusively through this interface.
  */
 public interface CartApi {
 
     // ─── Cart lifecycle ───────────────────────────────────────────────────────
 
-    /**
-     * Get or create a cart for the current HTTP session.
-     * Returns existing cart if one exists, creates new otherwise.
-     *
-     * @param sessionId HTTP session identifier
-     * @return existing or newly created cart
-     */
     Cart getOrCreateCart(String sessionId);
 
-    /**
-     * Get cart by ID. Used by Order module when converting cart to order.
-     * Returns empty if cart doesn't exist.
-     */
     Optional<Cart> findById(UUID cartId);
 
-    /**
-     * Get cart by session ID.
-     */
     Optional<Cart> findBySessionId(String sessionId);
 
     // ─── Item management ──────────────────────────────────────────────────────
@@ -45,67 +27,31 @@ public interface CartApi {
     /**
      * Add item to cart or increase quantity if already present.
      * Validates:
-     *   - Product exists and is active (via CatalogApi)
-     *   - Product is in stock (via InventoryApi)
+     *   - SKU exists and is active (via CatalogApi)
+     *   - SKU is in stock (via InventoryApi)
      *   - Quantity doesn't exceed maximum (999)
-     *
-     * @param cartId cart identifier
-     * @param productId product to add
-     * @param quantity amount to add (positive integer)
-     * @throws ProductNotAvailableException if product inactive or doesn't exist
-     * @throws OutOfStockException if product has zero stock
-     * @throws QuantityExceededException if resulting quantity > 999
      */
-    void addItem(UUID cartId, UUID productId, int quantity);
+    void addItem(UUID cartId, UUID skuId, int quantity);
 
-    /**
-     * Update item quantity. Setting to 0 removes the item.
-     *
-     * @param cartId cart identifier
-     * @param itemId item to update
-     * @param quantity new quantity (0 to remove)
-     * @throws CartItemNotFoundException if item doesn't exist
-     */
     void updateQuantity(UUID cartId, UUID itemId, int quantity);
 
-    /**
-     * Remove specific item from cart.
-     *
-     * @param cartId cart identifier
-     * @param itemId item to remove
-     */
     void removeItem(UUID cartId, UUID itemId);
 
-    /**
-     * Remove all items. Called after order placement.
-     *
-     * @param cartId cart to clear
-     */
     void clearCart(UUID cartId);
 
     // ─── Queries ──────────────────────────────────────────────────────────────
 
-    /**
-     * Get cart summary with totals and line items.
-     */
     CartSummary getSummary(UUID cartId);
 
-    /**
-     * Count total items in cart (sum of quantities).
-     * Used for cart icon badge in UI.
-     */
     int getItemCount(UUID cartId);
 
-    /**
-     * Check if cart is empty.
-     */
     boolean isEmpty(UUID cartId);
 
-    // ─── Projection records (public — used by callers of CartApi) ────────────
+    // ─── Projection records ───────────────────────────────────────────────────
 
     record Cart(
             UUID    id,
-            UUID    customerId,         // NULL for anonymous
+            UUID    customerId,
             String  sessionId,
             Instant createdAt,
             Instant updatedAt,
@@ -114,33 +60,33 @@ public interface CartApi {
 
     record CartItemDto(
             UUID       id,
-            UUID       productId,
-            String     productName,
-            String     productSku,
+            UUID       skuId,
+            String     skuName,
+            String     partNumber,
             String     thumbnailKey,
             int        quantity,
             BigDecimal unitPrice,
-            BigDecimal lineTotal        // quantity × unitPrice
+            BigDecimal lineTotal
     ) {}
 
     record CartSummary(
             UUID       cartId,
-            int        itemCount,       // number of distinct products
-            int        totalQuantity,   // sum of all quantities
-            BigDecimal subtotal         // sum of all line totals
+            int        itemCount,
+            int        totalQuantity,
+            BigDecimal subtotal
     ) {}
 
     // ─── Exceptions ───────────────────────────────────────────────────────────
 
-    class ProductNotAvailableException extends RuntimeException {
-        public ProductNotAvailableException(UUID productId) {
-            super("Product not available: " + productId);
+    class SkuNotAvailableException extends RuntimeException {
+        public SkuNotAvailableException(UUID skuId) {
+            super("SKU not available: " + skuId);
         }
     }
 
     class OutOfStockException extends RuntimeException {
-        public OutOfStockException(UUID productId) {
-            super("Product out of stock: " + productId);
+        public OutOfStockException(UUID skuId) {
+            super("SKU out of stock: " + skuId);
         }
     }
 
@@ -162,4 +108,3 @@ public interface CartApi {
         }
     }
 }
-
