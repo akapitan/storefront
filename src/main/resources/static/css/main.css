@@ -75,51 +75,13 @@ body {
     background: var(--mcm-tan);
     border-right: 1px solid var(--mcm-border);
     flex-shrink: 0;
-    transition: margin-left 0.3s ease-in-out;
-    position: relative;
-}
 
-.sidebar.collapsed {
-    margin-left: -220px;
-}
-
-.sidebar-toggle {
-    position: absolute;
-    right: -30px;
-    top: 10px;
-    width: 30px;
-    height: 40px;
-    background: var(--mcm-tan);
-    border: 1px solid var(--mcm-border);
-    border-left: none;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: var(--font-size-lg);
-    color: var(--mcm-blue);
-    z-index: 10;
-    transition: background 0.2s;
-}
-
-.sidebar-toggle:hover {
-    background: var(--mcm-tan-dark);
-}
-
-.sidebar-toggle::before {
-    content: '‹';
-    font-weight: bold;
-}
-
-.sidebar.collapsed .sidebar-toggle::before {
-    content: '›';
 }
 
 .main-content {
     flex: 1;
     background: var(--mcm-bg);
     padding: var(--spacing-md);
-    transition: margin-left 0.3s ease-in-out;
 }
 
 /* ─── Utility Bar (Yellow top bar) ──────────────────────────────────────── */
@@ -155,6 +117,9 @@ body {
     background: var(--mcm-bg);
     border-bottom: 2px solid var(--mcm-blue);
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    position: sticky;
+    top: 0;
+    z-index: 100;
 }
 
 .header-main {
@@ -166,6 +131,7 @@ body {
     align-items: center;
     gap: var(--spacing-xl);
     padding: 0 var(--spacing-md);
+    max-width: 100%;
 }
 
 .site-logo {
@@ -450,17 +416,16 @@ main {
     text-decoration: none;
     font-size: var(--font-size-sm);
     line-height: 1.3;
-    border-left: 3px solid transparent;
+    transition: background-color 0.15s;
 }
 
 .category-tree a:hover {
-    background: var(--mcm-tan-dark);
-    border-left-color: var(--mcm-blue);
+    background: #E8EDF5;
 }
 
-.category-tree .active {
-    background: var(--mcm-tan-dark);
-    border-left-color: var(--mcm-blue);
+.category-tree a.active {
+    background: var(--mcm-yellow);
+    color: var(--mcm-gray);
     font-weight: bold;
 }
 
@@ -732,16 +697,6 @@ main {
         width: 100%;
         border-right: none;
         border-bottom: 1px solid var(--mcm-border);
-        margin-left: 0 !important;
-    }
-
-    .sidebar.collapsed {
-        display: none;
-    }
-
-    .sidebar-toggle {
-        right: 10px;
-        top: 10px;
     }
 
     .category-grid {

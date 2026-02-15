@@ -2,11 +2,6 @@
 @import java.util.List
 
 <aside class="sidebar" id="sidebar">
-    <button class="sidebar-toggle"
-            onclick="toggleSidebar()"
-            aria-label="Toggle sidebar"
-            title="Toggle navigation"></button>
-
     <nav class="category-nav">
         <h2 class="category-nav-title">Product Categories</h2>
         <ul class="category-tree" id="category-tree"

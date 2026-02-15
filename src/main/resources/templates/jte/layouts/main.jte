@@ -40,25 +40,7 @@
 <!-- Footer -->
 @template.fragments.footer()
 
-<!-- Sidebar Toggle Script -->
 <script>
-    function toggleSidebar() {
-        const sidebar = document.getElementById('sidebar');
-        sidebar.classList.toggle('collapsed');
-
-        // Save state to localStorage
-        const isCollapsed = sidebar.classList.contains('collapsed');
-        localStorage.setItem('sidebarCollapsed', isCollapsed);
-    }
-
-    // Restore sidebar state on page load
-    document.addEventListener('DOMContentLoaded', function () {
-        const sidebarCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
-        if (sidebarCollapsed) {
-            document.getElementById('sidebar').classList.add('collapsed');
-        }
-    });
-
     // Close search dropdown when clicking outside
     document.addEventListener('click', function(e) {
         const searchBar = document.querySelector('.search-bar');
@@ -92,6 +74,22 @@
             });
         }
     });
+
+    // Active category highlighting
+    function updateActiveCategory() {
+        const path = location.pathname;
+        document.querySelectorAll('.category-tree a').forEach(function(link) {
+            if (link.getAttribute('href') === path) {
+                link.classList.add('active');
+            } else {
+                link.classList.remove('active');
+            }
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', updateActiveCategory);
+    document.body.addEventListener('htmx:pushedIntoHistory', updateActiveCategory);
+    document.body.addEventListener('htmx:afterSwap', updateActiveCategory);
 </script>
 
 

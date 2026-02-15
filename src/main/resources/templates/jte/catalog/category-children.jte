@@ -12,12 +12,5 @@
             ${child.name()}
             <span class="category-count">(${child.groupCount()})</span>
         </a>
-        @if(!child.isLeaf())
-            <button class="category-expand"
-                    hx-get="/catalog/category/${child.slug()}/children"
-                    hx-target="next ul"
-                    hx-swap="innerHTML">+</button>
-            <ul class="category-tree"></ul>
-        @endif
     </li>
 @endfor
