@@ -1,7 +1,5 @@
 package com.storefront.shared;
 
-import java.time.Instant;
-import java.util.UUID;
 
 /**
  * DomainEvent — base record for all Spring ApplicationEvents in this modulith.
@@ -36,21 +34,4 @@ import java.util.UUID;
  *   - Is async by default in Spring Modulith 1.1+
  */
 public interface DomainEvent {
-
-    /**
-     * Unique identifier for this event instance.
-     * Default implementation generates a random UUID.
-     * Override if you need deterministic IDs (e.g. for idempotency).
-     */
-    default UUID eventId() {
-        return UUID.randomUUID();
-    }
-
-    /**
-     * Timestamp when the event occurred.
-     * Default implementation uses the current instant.
-     */
-    default Instant occurredOn() {
-        return Instant.now();
-    }
 }

@@ -61,8 +61,8 @@ dependencies {
     // ── Testing ───────────────────────────────────────────────────────────────
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.security:spring-security-test")
-    implementation(libs.testcontainers.junit.jupiter)
-    implementation(libs.testcontainers.postgresql)
+    testImplementation(libs.testcontainers.junit.jupiter)
+    testImplementation(libs.testcontainers.postgresql)
 }
 
 // Include generated sources in compilation

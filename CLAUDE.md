@@ -18,8 +18,7 @@ docker compose up -d
 # Run the application (dev profile)
 ./gradlew bootRunDev
 
-# Build
-./gradlew build
+# Build ./gradlew build
 
 # Run tests
 ./gradlew test

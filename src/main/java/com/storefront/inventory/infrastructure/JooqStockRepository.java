@@ -72,37 +72,29 @@ class JooqStockRepository implements StockRepository {
     @CacheEvict(value = "inventory", cacheManager = "redisCacheManager", key = "#skuId")
     @Transactional
     public int decrementQuantity(UUID skuId, int amount) {
-        int updated = primaryDsl
+        var record = primaryDsl
                 .update(INVENTORY)
                 .set(INVENTORY.QUANTITY, INVENTORY.QUANTITY.minus(amount))
                 .where(INVENTORY.SKU_ID.eq(skuId))
                 .and(INVENTORY.QUANTITY.ge(amount))
-                .execute();
+                .returning(INVENTORY.QUANTITY)
+                .fetchOne();
 
-        if (updated == 0) return -1;
-
-        return primaryDsl
-                .select(INVENTORY.QUANTITY)
-                .from(INVENTORY)
-                .where(INVENTORY.SKU_ID.eq(skuId))
-                .fetchOne(INVENTORY.QUANTITY);
+        return record == null ? -1 : record.getQuantity();
     }
 
     @Override
     @CacheEvict(value = "inventory", cacheManager = "redisCacheManager", key = "#skuId")
     @Transactional
     public int incrementQuantity(UUID skuId, int amount) {
-        primaryDsl
+        var record = primaryDsl
                 .update(INVENTORY)
                 .set(INVENTORY.QUANTITY, INVENTORY.QUANTITY.plus(amount))
                 .where(INVENTORY.SKU_ID.eq(skuId))
-                .execute();
+                .returning(INVENTORY.QUANTITY)
+                .fetchOne();
 
-        return primaryDsl
-                .select(INVENTORY.QUANTITY)
-                .from(INVENTORY)
-                .where(INVENTORY.SKU_ID.eq(skuId))
-                .fetchOne(INVENTORY.QUANTITY);
+        return record == null ? 0 : record.getQuantity();
     }
 
     @Override

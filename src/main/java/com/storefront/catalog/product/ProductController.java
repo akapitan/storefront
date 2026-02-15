@@ -13,6 +13,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 @Controller
@@ -186,7 +188,7 @@ class ProductController {
         model.addAttribute("hasPrev", results.hasPrevious());
         model.addAttribute("query", q);
 
-        HtmxResponse.pushUrl(response, "/catalog/search?q=" + q + "&page=" + page);
+        HtmxResponse.pushUrl(response, "/catalog/search?q=" + URLEncoder.encode(q, StandardCharsets.UTF_8) + "&page=" + page);
 
         if (HtmxResponse.isHtmxRequest(request)) {
             return "catalog/search-results-content";

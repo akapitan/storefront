@@ -15,8 +15,6 @@ import java.util.Locale;
 @Component("fmt")
 public final class TemplateHelpers {
 
-    private static final NumberFormat CURRENCY_FORMAT = NumberFormat.getCurrencyInstance(Locale.US);
-
     private TemplateHelpers() {
         // Spring will instantiate via reflection
     }
@@ -29,7 +27,7 @@ public final class TemplateHelpers {
         if (amount == null) {
             return "$0.00";
         }
-        return CURRENCY_FORMAT.format(amount);
+        return NumberFormat.getCurrencyInstance(Locale.US).format(amount);
     }
 
     /**
