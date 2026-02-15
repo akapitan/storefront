@@ -1,6 +1,7 @@
-package com.storefront.inventory.stock;
+package com.storefront.inventory.infrastructure;
 
 import com.storefront.inventory.InventoryApi.StockLevel;
+import com.storefront.inventory.domain.model.StockRepository;
 import org.jooq.DSLContext;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.CacheEvict;
@@ -13,14 +14,13 @@ import java.util.UUID;
 
 import static com.storefront.jooq.tables.Inventory.INVENTORY;
 
-
 @Repository
-class StockRepository {
+class JooqStockRepository implements StockRepository {
 
     private final DSLContext primaryDsl;
     private final DSLContext readOnlyDsl;
 
-    StockRepository(
+    JooqStockRepository(
             DSLContext primaryDsl,
             @Qualifier("readOnlyDsl") DSLContext readOnlyDsl) {
         this.primaryDsl = primaryDsl;
@@ -29,9 +29,10 @@ class StockRepository {
 
     // ─── Reads ────────────────────────────────────────────────────────────────
 
+    @Override
     @Cacheable(value = "inventory", cacheManager = "redisCacheManager", key = "#skuId")
     @Transactional(readOnly = true)
-    Optional<StockLevel> findBySkuId(UUID skuId) {
+    public Optional<StockLevel> findBySkuId(UUID skuId) {
         return readOnlyDsl
                 .selectFrom(INVENTORY)
                 .where(INVENTORY.SKU_ID.eq(skuId))
@@ -43,8 +44,9 @@ class StockRepository {
                 ));
     }
 
+    @Override
     @Transactional(readOnly = true)
-    boolean isInStock(UUID skuId) {
+    public boolean isInStock(UUID skuId) {
         return readOnlyDsl.fetchExists(
                 INVENTORY,
                 INVENTORY.SKU_ID.eq(skuId).and(INVENTORY.QUANTITY.gt(0)));
@@ -52,9 +54,10 @@ class StockRepository {
 
     // ─── Writes ───────────────────────────────────────────────────────────────
 
+    @Override
     @CacheEvict(value = "inventory", cacheManager = "redisCacheManager", key = "#skuId")
     @Transactional
-    void initialize(UUID skuId) {
+    public void initialize(UUID skuId) {
         primaryDsl
                 .insertInto(INVENTORY)
                 .set(INVENTORY.SKU_ID, skuId)
@@ -65,9 +68,10 @@ class StockRepository {
                 .execute();
     }
 
+    @Override
     @CacheEvict(value = "inventory", cacheManager = "redisCacheManager", key = "#skuId")
     @Transactional
-    int decrementQuantity(UUID skuId, int amount) {
+    public int decrementQuantity(UUID skuId, int amount) {
         int updated = primaryDsl
                 .update(INVENTORY)
                 .set(INVENTORY.QUANTITY, INVENTORY.QUANTITY.minus(amount))
@@ -84,9 +88,10 @@ class StockRepository {
                 .fetchOne(INVENTORY.QUANTITY);
     }
 
+    @Override
     @CacheEvict(value = "inventory", cacheManager = "redisCacheManager", key = "#skuId")
     @Transactional
-    int incrementQuantity(UUID skuId, int amount) {
+    public int incrementQuantity(UUID skuId, int amount) {
         primaryDsl
                 .update(INVENTORY)
                 .set(INVENTORY.QUANTITY, INVENTORY.QUANTITY.plus(amount))
@@ -100,9 +105,10 @@ class StockRepository {
                 .fetchOne(INVENTORY.QUANTITY);
     }
 
+    @Override
     @CacheEvict(value = "inventory", cacheManager = "redisCacheManager", key = "#skuId")
     @Transactional
-    void archive(UUID skuId) {
+    public void archive(UUID skuId) {
         primaryDsl
                 .update(INVENTORY)
                 .set(INVENTORY.QUANTITY, 0)

@@ -112,7 +112,7 @@ public interface CatalogApi {
     record SkuRow(
             UUID id,
             String partNumber,
-            org.jooq.JSONB specsJsonb,
+            String specsJson,
             String sellUnit,
             int sellQty,
             boolean inStock,

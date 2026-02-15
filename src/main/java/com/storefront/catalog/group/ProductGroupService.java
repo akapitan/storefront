@@ -1,9 +1,10 @@
 package com.storefront.catalog.group;
 
 import com.storefront.catalog.CatalogApi;
-import com.storefront.catalog.attribute.AttributeRepository;
-import com.storefront.catalog.category.CategoryRepository;
-import com.storefront.catalog.sku.SkuRepository;
+import com.storefront.catalog.domain.model.AttributeRepository;
+import com.storefront.catalog.domain.model.CategoryRepository;
+import com.storefront.catalog.domain.model.ProductGroupRepository;
+import com.storefront.catalog.domain.model.SkuRepository;
 import com.storefront.shared.PageRequest;
 import com.storefront.shared.Pagination;
 import com.storefront.shared.Slice;

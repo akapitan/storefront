@@ -1,6 +1,7 @@
 package com.storefront.inventory.stock;
 
 import com.storefront.inventory.InventoryApi;
+import com.storefront.inventory.domain.model.StockRepository;
 import com.storefront.inventory.events.InventoryLow;
 import com.storefront.inventory.events.StockDepleted;
 import com.storefront.inventory.events.StockUpdated;

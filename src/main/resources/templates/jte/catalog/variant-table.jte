@@ -40,7 +40,7 @@
         @for(var sku : skuRows)
             !{
                     com.fasterxml.jackson.databind.JsonNode specs = null;
-                    try { specs = mapper.readTree(sku.specsJsonb().data()); } catch (Exception e) {}
+                    try { specs = mapper.readTree(sku.specsJson()); } catch (Exception e) {}
                 }
             <tr class="vt-row ${sku.inStock() ? "" : "vt-row-oos"}">
                 <td class="vt-cell-pn">

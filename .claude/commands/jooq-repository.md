@@ -7,26 +7,26 @@ You are creating a jOOQ-based repository implementation in this project's persis
 ## Step 1: Identify the domain interface
 
 Find the domain repository interface that needs a jOOQ implementation. It lives under:
-`nbx-backend/src/main/java/com/versuni/nbx/backend/domain/model/<entity>/<Entity>Repository.java`
+`src/main/java/com/storefront/<module>/domain/model/<Entity>Repository.java`
 
 Read it to understand the contract (method signatures, return types, parameter types).
 
 ## Step 2: Identify the jOOQ-generated tables
 
-Find the relevant generated table references under `org.jooq.generated.Tables`. Read the generated table class to know the exact column names and types. If unsure, search for existing usages in the `infrastructure/persistence/jooq/` package.
+Find the relevant generated table references under `com.storefront.jooq.Tables`. Read the generated table class to know the exact column names and types. If unsure, search for existing usages in the `<module>/infrastructure/` package.
 
 ## Step 3: Create/update the implementation
 
 The file goes in:
-`nbx-backend/src/main/java/com/versuni/nbx/backend/infrastructure/persistence/jooq/Jooq<Entity>Repository.java`
+`src/main/java/com/storefront/<module>/infrastructure/Jooq<Entity>Repository.java`
 
 ### Mandatory class structure (in this exact order):
 
 ```java
-package com.versuni.nbx.backend.infrastructure.persistence.jooq;
+package com.storefront.<module>.infrastructure;
 
 // imports: java.*, org.jooq.*, org.springframework.*, domain model classes
-// ALWAYS use: import static org.jooq.generated.Tables.<TABLE_NAME>;
+// ALWAYS use: import static com.storefront.jooq.Tables.<TABLE_NAME>;
 
 @Repository
 class Jooq<Entity>Repository implements <Entity>Repository {
@@ -76,12 +76,12 @@ class Jooq<Entity>Repository implements <Entity>Repository {
 | Rule | Detail |
 |------|--------|
 | **Visibility** | Class is **package-private** (no `public` keyword). Constructor is also package-private. |
-| **Constructor** | Single `DSLContext` param with `Objects.requireNonNull` guard. No `@Autowired`. |
+| **Constructor** | Single `DSLContext` param with `Objects.requireNonNull` guard. No `@Autowired`. For read/write splitting, inject both `DSLContext primaryDsl` and `@Qualifier("readOnlyDsl") DSLContext readOnlyDsl`. |
 | **`selectFields`** | Always a `static final SelectField<?>[]`. Include every column and computed field. |
 | **`recordMapper`** | Always a `private static final` singleton of an inner `RecordMapper` class. |
 | **`@Transactional`** | Write methods: `@Transactional`. Read methods: `@Transactional(readOnly = true)`. |
 | **Caching** | Use `@Cacheable(cacheNames = "...", key = "#paramName")` / `@CacheEvict` only when the domain interface documents caching intent, or when an existing repo already caches. |
-| **Table imports** | Always `import static org.jooq.generated.Tables.TABLE_NAME;`. Never use qualified table refs inline. |
+| **Table imports** | Always `import static com.storefront.jooq.Tables.TABLE_NAME;`. Never use qualified table refs inline. |
 | **ID conversions** | UUID-based IDs: call `.toUuid()`. String-based IDs: call `.toString()`. Construct from DB: `EntityId.from(uuid)` or `EntityId.of(string)`. |
 | **JSONB** | Use `JsonbHelper.serialize(obj)` and `JsonbHelper.deserialize(jsonb, Class/TypeReference)`. Define `TypeReference` subclasses as private static inner classes. |
 | **Joins** | Chain in `.from(TABLE.join(...).on(...).leftJoin(...).on(...))`. |

@@ -1,8 +1,9 @@
-package com.storefront.catalog.attribute;
+package com.storefront.catalog.infrastructure;
 
 import com.storefront.catalog.CatalogApi.ColumnConfig;
 import com.storefront.catalog.CatalogApi.FacetGroup;
 import com.storefront.catalog.CatalogApi.FacetOption;
+import com.storefront.catalog.domain.model.AttributeRepository;
 import org.jooq.DSLContext;
 import org.jooq.impl.DSL;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -21,14 +22,15 @@ import static com.storefront.jooq.Tables.SKUS;
 import static com.storefront.jooq.Tables.SKU_ATTRIBUTES;
 
 @Repository
-public class AttributeRepository {
+class JooqAttributeRepository implements AttributeRepository {
 
     private final DSLContext readOnlyDsl;
 
-    AttributeRepository(@Qualifier("readOnlyDsl") DSLContext readOnlyDsl) {
+    JooqAttributeRepository(@Qualifier("readOnlyDsl") DSLContext readOnlyDsl) {
         this.readOnlyDsl = readOnlyDsl;
     }
 
+    @Override
     @Transactional(readOnly = true)
     public List<ColumnConfig> findColumnConfig(UUID groupId) {
         return readOnlyDsl
@@ -62,6 +64,7 @@ public class AttributeRepository {
                 ));
     }
 
+    @Override
     @Transactional(readOnly = true)
     public List<FacetGroup> findFacetCounts(UUID groupId, List<UUID> matchingSkuIds) {
         var records = readOnlyDsl

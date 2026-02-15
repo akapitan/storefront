@@ -361,7 +361,7 @@ BEGIN
     )
     WHERE c.path @> (
         SELECT path FROM categories WHERE id =
-            NEW.category_id
+            COALESCE(NEW.category_id, OLD.category_id)
     );
     RETURN NULL;
 END; $$;

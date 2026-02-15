@@ -1,8 +1,9 @@
-package com.storefront.catalog.sku;
+package com.storefront.catalog.infrastructure;
 
 import com.storefront.catalog.CatalogApi.NumericRange;
 import com.storefront.catalog.CatalogApi.SkuPriceInfo;
 import com.storefront.catalog.CatalogApi.SkuRow;
+import com.storefront.catalog.domain.model.SkuRepository;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.Record;
@@ -21,14 +22,15 @@ import static com.storefront.jooq.Tables.SKU_ATTRIBUTES;
 import static com.storefront.jooq.Tables.SKU_PRICE_TIERS;
 
 @Repository
-public class SkuRepository {
+class JooqSkuRepository implements SkuRepository {
 
     private final DSLContext readOnlyDsl;
 
-    SkuRepository(@Qualifier("readOnlyDsl") DSLContext readOnlyDsl) {
+    JooqSkuRepository(@Qualifier("readOnlyDsl") DSLContext readOnlyDsl) {
         this.readOnlyDsl = readOnlyDsl;
     }
 
+    @Override
     @Transactional(readOnly = true)
     public List<SkuRow> findVariantTable(UUID groupId, List<UUID> matchingSkuIds) {
         // Price tiers as JSON subquery
@@ -56,6 +58,7 @@ public class SkuRepository {
                 .fetch(this::toSkuRow);
     }
 
+    @Override
     @Transactional(readOnly = true)
     public List<UUID> findMatchingSkuIds(UUID groupId,
                                   Map<Integer, List<Integer>> enumFilters,
@@ -106,6 +109,7 @@ public class SkuRepository {
         return readOnlyDsl.select(SKUS.ID).from(SKUS).where(condition).fetch(SKUS.ID);
     }
 
+    @Override
     @Transactional(readOnly = true)
     public Optional<SkuRow> findByPartNumber(String partNumber) {
         var priceTiers = DSL.field(
@@ -126,12 +130,14 @@ public class SkuRepository {
                 .fetchOptional(this::toSkuRow);
     }
 
+    @Override
     @Transactional(readOnly = true)
     public boolean existsAndActive(UUID skuId) {
         return readOnlyDsl.fetchExists(
                 SKUS, SKUS.ID.eq(skuId).and(SKUS.IS_ACTIVE.isTrue()));
     }
 
+    @Override
     @Transactional(readOnly = true)
     public Optional<SkuPriceInfo> findPriceInfo(UUID skuId, int quantity) {
         return readOnlyDsl
@@ -155,10 +161,11 @@ public class SkuRepository {
     }
 
     private SkuRow toSkuRow(Record r) {
+        var specsJsonb = r.get(SKUS.SPECS_JSONB);
         return new SkuRow(
                 r.get(SKUS.ID),
                 r.get(SKUS.PART_NUMBER),
-                r.get(SKUS.SPECS_JSONB),
+                specsJsonb != null ? specsJsonb.data() : null,
                 r.get(SKUS.SELL_UNIT),
                 r.get(SKUS.SELL_QTY),
                 r.get(SKUS.IN_STOCK),

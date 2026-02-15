@@ -1,7 +1,8 @@
-package com.storefront.catalog.group;
+package com.storefront.catalog.infrastructure;
 
 import com.storefront.catalog.CatalogApi.ProductGroupDetail;
 import com.storefront.catalog.CatalogApi.ProductGroupSummary;
+import com.storefront.catalog.domain.model.ProductGroupRepository;
 import com.storefront.shared.PageRequest;
 import com.storefront.shared.Pagination;
 import com.storefront.shared.Slice;
@@ -21,14 +22,15 @@ import static com.storefront.jooq.Tables.CATEGORIES;
 import static com.storefront.jooq.Tables.PRODUCT_GROUPS;
 
 @Repository
-public class ProductGroupRepository {
+class JooqProductGroupRepository implements ProductGroupRepository {
 
     private final DSLContext readOnlyDsl;
 
-    ProductGroupRepository(@Qualifier("readOnlyDsl") DSLContext readOnlyDsl) {
+    JooqProductGroupRepository(@Qualifier("readOnlyDsl") DSLContext readOnlyDsl) {
         this.readOnlyDsl = readOnlyDsl;
     }
 
+    @Override
     @Cacheable(value = "product-listing", cacheManager = "redisCacheManager",
             key = "'browse:' + #categoryPath + ':' + #request.page() + ':' + #request.pageSize()")
     @Transactional(readOnly = true)
@@ -52,6 +54,7 @@ public class ProductGroupRepository {
         return Slice.of(rows, request);
     }
 
+    @Override
     @Cacheable(value = "product-detail", cacheManager = "redisCacheManager", key = "'group:' + #slug")
     @Transactional(readOnly = true)
     public Optional<ProductGroupDetail> findBySlug(String slug) {
@@ -85,6 +88,7 @@ public class ProductGroupRepository {
                 ));
     }
 
+    @Override
     @Cacheable(value = "search-results", cacheManager = "redisCacheManager",
             key = "'search:' + #query + ':' + #request.page() + ':' + #request.pageSize()")
     @Transactional(readOnly = true)
@@ -119,6 +123,7 @@ public class ProductGroupRepository {
         return Pagination.of(items, total, request);
     }
 
+    @Override
     @Transactional(readOnly = true)
     public List<ProductGroupSummary> searchDropdown(String query, int limit) {
         var tsQuery = DSL.field("websearch_to_tsquery('english', {0})", Object.class, query);

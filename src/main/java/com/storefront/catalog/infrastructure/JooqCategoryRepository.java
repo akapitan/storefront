@@ -1,7 +1,8 @@
-package com.storefront.catalog.category;
+package com.storefront.catalog.infrastructure;
 
 import com.storefront.catalog.CatalogApi.CategoryBreadcrumb;
 import com.storefront.catalog.CatalogApi.CategoryNode;
+import com.storefront.catalog.domain.model.CategoryRepository;
 import org.jooq.DSLContext;
 import org.jooq.Record;
 import org.jooq.impl.DSL;
@@ -16,14 +17,15 @@ import java.util.Optional;
 import static com.storefront.jooq.Tables.CATEGORIES;
 
 @Repository
-public class CategoryRepository {
+class JooqCategoryRepository implements CategoryRepository {
 
     private final DSLContext readOnlyDsl;
 
-    CategoryRepository(@Qualifier("readOnlyDsl") DSLContext readOnlyDsl) {
+    JooqCategoryRepository(@Qualifier("readOnlyDsl") DSLContext readOnlyDsl) {
         this.readOnlyDsl = readOnlyDsl;
     }
 
+    @Override
     @Cacheable(value = "categories", key = "'top-level'")
     @Transactional(readOnly = true)
     public List<CategoryNode> findTopLevel() {
@@ -37,6 +39,7 @@ public class CategoryRepository {
                 .fetch(this::toNode);
     }
 
+    @Override
     @Cacheable(value = "categories", key = "'children:' + #parentId")
     @Transactional(readOnly = true)
     public List<CategoryNode> findChildren(int parentId) {
@@ -50,6 +53,7 @@ public class CategoryRepository {
                 .fetch(this::toNode);
     }
 
+    @Override
     @Transactional(readOnly = true)
     public List<CategoryBreadcrumb> findBreadcrumb(String categoryPath) {
         return readOnlyDsl
@@ -66,6 +70,7 @@ public class CategoryRepository {
                 ));
     }
 
+    @Override
     @Cacheable(value = "categories", key = "'slug:' + #slug")
     @Transactional(readOnly = true)
     public Optional<CategoryNode> findBySlug(String slug) {
