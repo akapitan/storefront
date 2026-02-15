@@ -32,7 +32,8 @@ class JooqCategoryRepository implements CategoryRepository {
         return readOnlyDsl
                 .select(CATEGORIES.ID, CATEGORIES.NAME, CATEGORIES.SLUG,
                         CATEGORIES.PATH, CATEGORIES.GROUP_COUNT,
-                        CATEGORIES.IS_LEAF, CATEGORIES.SORT_ORDER)
+                        CATEGORIES.IS_LEAF, CATEGORIES.SORT_ORDER,
+                        CATEGORIES.DEPTH, CATEGORIES.PARENT_ID)
                 .from(CATEGORIES)
                 .where(CATEGORIES.DEPTH.eq((short) 0).and(CATEGORIES.IS_ACTIVE.isTrue()))
                 .orderBy(CATEGORIES.SORT_ORDER)
@@ -46,7 +47,8 @@ class JooqCategoryRepository implements CategoryRepository {
         return readOnlyDsl
                 .select(CATEGORIES.ID, CATEGORIES.NAME, CATEGORIES.SLUG,
                         CATEGORIES.PATH, CATEGORIES.GROUP_COUNT,
-                        CATEGORIES.IS_LEAF, CATEGORIES.SORT_ORDER)
+                        CATEGORIES.IS_LEAF, CATEGORIES.SORT_ORDER,
+                        CATEGORIES.DEPTH, CATEGORIES.PARENT_ID)
                 .from(CATEGORIES)
                 .where(CATEGORIES.PARENT_ID.eq(parentId).and(CATEGORIES.IS_ACTIVE.isTrue()))
                 .orderBy(CATEGORIES.SORT_ORDER)
@@ -77,10 +79,32 @@ class JooqCategoryRepository implements CategoryRepository {
         return readOnlyDsl
                 .select(CATEGORIES.ID, CATEGORIES.NAME, CATEGORIES.SLUG,
                         CATEGORIES.PATH, CATEGORIES.GROUP_COUNT,
-                        CATEGORIES.IS_LEAF, CATEGORIES.SORT_ORDER)
+                        CATEGORIES.IS_LEAF, CATEGORIES.SORT_ORDER,
+                        CATEGORIES.DEPTH, CATEGORIES.PARENT_ID)
                 .from(CATEGORIES)
                 .where(CATEGORIES.SLUG.eq(slug).and(CATEGORIES.IS_ACTIVE.isTrue()))
                 .fetchOptional(this::toNode);
+    }
+
+    @Override
+    @Cacheable(value = "categories", key = "'descendants:' + #ancestorPath")
+    @Transactional(readOnly = true)
+    public List<CategoryNode> findDescendants(String ancestorPath) {
+        return readOnlyDsl
+                .select(CATEGORIES.ID, CATEGORIES.NAME, CATEGORIES.SLUG,
+                        CATEGORIES.PATH, CATEGORIES.GROUP_COUNT,
+                        CATEGORIES.IS_LEAF, CATEGORIES.SORT_ORDER,
+                        CATEGORIES.DEPTH, CATEGORIES.PARENT_ID)
+                .from(CATEGORIES)
+                .where(DSL.condition("{0} <@ {1}::ltree",
+                        CATEGORIES.PATH,
+                        DSL.val(ancestorPath)))
+                .and(DSL.condition("{0} != {1}::ltree",
+                        CATEGORIES.PATH,
+                        DSL.val(ancestorPath)))
+                .and(CATEGORIES.IS_ACTIVE.isTrue())
+                .orderBy(CATEGORIES.DEPTH, CATEGORIES.SORT_ORDER)
+                .fetch(this::toNode);
     }
 
     private CategoryNode toNode(Record r) {
@@ -91,7 +115,9 @@ class JooqCategoryRepository implements CategoryRepository {
                 String.valueOf(r.get(CATEGORIES.PATH)),
                 r.get(CATEGORIES.GROUP_COUNT),
                 r.get(CATEGORIES.IS_LEAF),
-                r.get(CATEGORIES.SORT_ORDER)
+                r.get(CATEGORIES.SORT_ORDER),
+                r.get(CATEGORIES.DEPTH),
+                r.get(CATEGORIES.PARENT_ID)
         );
     }
 }

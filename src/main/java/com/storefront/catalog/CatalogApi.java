@@ -28,6 +28,8 @@ public interface CatalogApi {
 
     Optional<CategoryNode> findCategoryBySlug(String slug);
 
+    List<CategoryNode> findCategoryDescendants(String categoryPath);
+
     // ─── Product group browse ──────────────────────────────────────────────────
 
     Slice<ProductGroupSummary> browseByCategory(String categoryPath, SliceRequest request);
@@ -72,7 +74,14 @@ public interface CatalogApi {
             String path,
             int groupCount,
             boolean isLeaf,
-            short sortOrder
+            short sortOrder,
+            short depth,
+            Integer parentId
+    ) {}
+
+    record CategoryGroup(
+            CategoryNode header,
+            List<CategoryNode> items
     ) {}
 
     record CategoryBreadcrumb(

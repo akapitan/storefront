@@ -2,6 +2,13 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Documentation Lookup
+
+When unsure about library APIs or recent changes:
+1. Use Context7 MCP to fetch current documentation
+2. Prefer official docs over training knowledge
+3. Always verify version compatibility
+
 ## Build & Run Commands
 
 ```bash

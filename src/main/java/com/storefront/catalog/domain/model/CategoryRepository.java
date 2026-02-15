@@ -15,4 +15,6 @@ public interface CategoryRepository {
     List<CategoryBreadcrumb> findBreadcrumb(String categoryPath);
 
     Optional<CategoryNode> findBySlug(String slug);
+
+    List<CategoryNode> findDescendants(String ancestorPath);
 }

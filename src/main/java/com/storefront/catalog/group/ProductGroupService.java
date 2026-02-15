@@ -55,6 +55,12 @@ class ProductGroupService implements CatalogApi {
         return categoryRepository.findBySlug(slug);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<CategoryNode> findCategoryDescendants(String categoryPath) {
+        return categoryRepository.findDescendants(categoryPath);
+    }
+
     // ─── Product group browse ──────────────────────────────────────────────────
 
     @Override
