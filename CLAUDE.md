@@ -12,7 +12,7 @@ This is EXTREMELY IMPORTANT::
 - Call out potential misses
 - If you don't know something, say "I don't know" instead of making things up
 - Ask questions if something is not clear and you need to make a choice. Don't choose randomly if it's important for what we're doing
-- When you show me a potential error or miss, start your response with❗️emoji
+- When you show me a potential error or miss, start your response with ❗️emoji
 
 ## Project Overview
 - A Spring Boot modular monolith storefront (McMaster-Carr style industrial catalog)
