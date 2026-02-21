@@ -14,7 +14,7 @@
 <div class="variant-table-header">
     <span class="variant-count">${skuRows.size()} items</span>
 </div>
-@template.catalog.variant-table(
+@template.catalog.product.variant-table(
     group = group,
     columns = columns,
     skuRows = skuRows

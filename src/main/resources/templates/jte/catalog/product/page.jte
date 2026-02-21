@@ -14,7 +14,7 @@
 @template.layouts.main(
     title = group.name(),
     content = @`
-        @template.catalog.product-group-content(
+        @template.catalog.product.content(
             group = group,
             columns = columns,
             breadcrumb = breadcrumb,

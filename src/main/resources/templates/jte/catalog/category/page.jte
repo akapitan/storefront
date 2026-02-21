@@ -15,7 +15,7 @@
 @template.layouts.main(
     title = category.name(),
     content = @`
-        @template.catalog.category-browse-content(
+        @template.catalog.category.content(
             category = category,
             groups = groups,
             hasMore = hasMore,
@@ -25,7 +25,7 @@
         )
     `,
     sidebarContent = @`
-        @template.catalog.category-filter-sidebar(
+        @template.catalog.category.filter-sidebar(
             category = category,
             attributes = attributes
         )

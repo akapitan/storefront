@@ -20,8 +20,8 @@ class HomeController {
         model.addAttribute("sections", sections);
 
         if (HtmxResponse.isHtmxRequest(request)) {
-            return "home-content-with-sidebar";
+            return "home/content-with-sidebar";
         }
-        return "index";
+        return "home/page";
     }
 }

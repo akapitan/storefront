@@ -30,7 +30,7 @@ class ProductController {
     public String topLevelCategories(Model model) {
         var categories = catalogApi.findTopLevelCategories();
         model.addAttribute("categories", categories);
-        return "catalog/top-level-categories";
+        return "catalog/category/top-level";
     }
 
     // ─── Category browse ───────────────────────────────────────────────────────
@@ -64,9 +64,9 @@ class ProductController {
         HtmxResponse.pushUrl(response, "/catalog/category/" + slug + "?page=" + page);
 
         if (HtmxResponse.isHtmxRequest(request)) {
-            return "catalog/category-browse-content-with-sidebar";
+            return "catalog/category/content-with-sidebar";
         }
-        return "catalog/category-browse";
+        return "catalog/category/page";
     }
 
     @GetMapping("/category/{slug}/children")
@@ -79,7 +79,7 @@ class ProductController {
 
         var children = catalogApi.findChildCategories(category.id());
         model.addAttribute("children", children);
-        return "catalog/category-children";
+        return "catalog/category/children";
     }
 
     // ─── Product group page ────────────────────────────────────────────────────
@@ -108,9 +108,9 @@ class ProductController {
         model.addAttribute("facets", facets);
 
         if (HtmxResponse.isHtmxRequest(request)) {
-            return "catalog/product-group-content";
+            return "catalog/product/content";
         }
-        return "catalog/product-group";
+        return "catalog/product/page";
     }
 
     @GetMapping("/product/{slug}/filter")
@@ -139,7 +139,7 @@ class ProductController {
         model.addAttribute("facets", facets);
         model.addAttribute("activeFilters", allParams);
 
-        return "catalog/product-group-filtered";
+        return "catalog/product/filtered";
     }
 
     // ─── Search ────────────────────────────────────────────────────────────────
@@ -156,7 +156,7 @@ class ProductController {
         }
 
         if (q.length() < 2) {
-            return "catalog/search-dropdown-empty";
+            return "catalog/search/dropdown-empty";
         }
 
         var results = catalogApi.searchDropdown(q, 10);
@@ -165,7 +165,7 @@ class ProductController {
         model.addAttribute("totalItems", results.size());
         model.addAttribute("query", q);
 
-        return "catalog/search-dropdown";
+        return "catalog/search/dropdown";
     }
 
     @GetMapping("/search")
@@ -193,9 +193,9 @@ class ProductController {
         HtmxResponse.pushUrl(response, "/catalog/search?q=" + URLEncoder.encode(q, StandardCharsets.UTF_8) + "&page=" + page);
 
         if (HtmxResponse.isHtmxRequest(request)) {
-            return "catalog/search-results-content";
+            return "catalog/search/content";
         }
-        return "catalog/search-results";
+        return "catalog/search/page";
     }
 
     // ─── Filter param parser ───────────────────────────────────────────────────

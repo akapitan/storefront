@@ -55,7 +55,7 @@
     <div class="pg-body">
         <%-- Filter panel (left rail) --%>
         <div class="filter-panel" id="filter-panel">
-            @template.catalog.filter-panel(
+            @template.catalog.product.filter-panel(
                 group = group,
                 facets = facets
             )
@@ -66,7 +66,7 @@
             <div class="variant-table-header">
                 <span class="variant-count">${skuRows.size()} items</span>
             </div>
-            @template.catalog.variant-table(
+            @template.catalog.product.variant-table(
                 group = group,
                 columns = columns,
                 skuRows = skuRows

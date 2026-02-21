@@ -9,7 +9,7 @@
     <h3 class="filter-title">Refine Results</h3>
 
     @for(var facet : facets)
-        @template.catalog.filter-facet(
+        @template.catalog.product.filter-facet(
             group = group,
             facet = facet
         )

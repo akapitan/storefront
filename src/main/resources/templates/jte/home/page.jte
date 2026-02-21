@@ -6,6 +6,6 @@
 @template.layouts.main(
     title = "Home",
     content = @`
-        @template.home-content(sections = sections)
+        @template.home.content(sections = sections)
     `
 )

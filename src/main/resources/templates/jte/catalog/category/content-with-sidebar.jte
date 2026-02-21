@@ -13,7 +13,7 @@
 @param List<AttributeSummary> attributes = java.util.List.of()
 
 <%-- Main content (swaps into #main-content) --%>
-@template.catalog.category-browse-content(
+@template.catalog.category.content(
     category = category,
     groups = groups,
     hasMore = hasMore,
@@ -24,7 +24,7 @@
 
 <%-- OOB sidebar swap --%>
 <div id="sidebar-content" hx-swap-oob="innerHTML:#sidebar-content">
-    @template.catalog.category-filter-sidebar(
+    @template.catalog.category.filter-sidebar(
         category = category,
         attributes = attributes
     )

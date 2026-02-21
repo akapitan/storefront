@@ -12,7 +12,7 @@
 @template.layouts.main(
     title = "Search Results",
     content = @`
-        @template.catalog.search-results-content(
+        @template.catalog.search.content(
             results = results,
             totalItems = totalItems,
             totalPages = totalPages,
