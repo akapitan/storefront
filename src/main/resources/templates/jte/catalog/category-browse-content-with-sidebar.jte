@@ -12,22 +12,20 @@
 @param List<CategoryBreadcrumb> breadcrumb
 @param List<AttributeSummary> attributes = java.util.List.of()
 
-@template.layouts.main(
-    title = category.name(),
-    content = @`
-        @template.catalog.category-browse-content(
-            category = category,
-            groups = groups,
-            hasMore = hasMore,
-            nextPage = nextPage,
-            children = children,
-            breadcrumb = breadcrumb
-        )
-    `,
-    sidebarContent = @`
-        @template.catalog.category-filter-sidebar(
-            category = category,
-            attributes = attributes
-        )
-    `
+<%-- Main content (swaps into #main-content) --%>
+@template.catalog.category-browse-content(
+    category = category,
+    groups = groups,
+    hasMore = hasMore,
+    nextPage = nextPage,
+    children = children,
+    breadcrumb = breadcrumb
 )
+
+<%-- OOB sidebar swap --%>
+<div id="sidebar-content" hx-swap-oob="innerHTML:#sidebar-content">
+    @template.catalog.category-filter-sidebar(
+        category = category,
+        attributes = attributes
+    )
+</div>

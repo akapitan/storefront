@@ -107,6 +107,21 @@ class JooqCategoryRepository implements CategoryRepository {
                 .fetch(this::toNode);
     }
 
+    @Override
+    @Cacheable(value = "categories", key = "'all-depth:' + #maxDepth")
+    @Transactional(readOnly = true)
+    public List<CategoryNode> findAllWithinDepth(short maxDepth) {
+        return readOnlyDsl
+                .select(CATEGORIES.ID, CATEGORIES.NAME, CATEGORIES.SLUG,
+                        CATEGORIES.PATH, CATEGORIES.GROUP_COUNT,
+                        CATEGORIES.IS_LEAF, CATEGORIES.SORT_ORDER,
+                        CATEGORIES.DEPTH, CATEGORIES.PARENT_ID)
+                .from(CATEGORIES)
+                .where(CATEGORIES.DEPTH.le(maxDepth).and(CATEGORIES.IS_ACTIVE.isTrue()))
+                .orderBy(CATEGORIES.DEPTH, CATEGORIES.SORT_ORDER)
+                .fetch(this::toNode);
+    }
+
     private CategoryNode toNode(Record r) {
         return new CategoryNode(
                 r.get(CATEGORIES.ID),

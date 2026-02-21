@@ -1,11 +1,11 @@
-@import com.storefront.catalog.CatalogApi.CategoryNode
+@import com.storefront.catalog.CatalogApi.CategorySection
 @import java.util.List
 
-@param List<CategoryNode> categories = java.util.List.of()
+@param List<CategorySection> sections = java.util.List.of()
 
 @template.layouts.main(
     title = "Home",
     content = @`
-        @template.home-content(categories = categories)
+        @template.home-content(sections = sections)
     `
 )

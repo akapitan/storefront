@@ -17,4 +17,6 @@ public interface CategoryRepository {
     Optional<CategoryNode> findBySlug(String slug);
 
     List<CategoryNode> findDescendants(String ancestorPath);
+
+    List<CategoryNode> findAllWithinDepth(short maxDepth);
 }

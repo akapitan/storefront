@@ -30,6 +30,8 @@ public interface CatalogApi {
 
     List<CategoryNode> findCategoryDescendants(String categoryPath);
 
+    List<CategorySection> findAllCategoriesGrouped();
+
     // ─── Product group browse ──────────────────────────────────────────────────
 
     Slice<ProductGroupSummary> browseByCategory(String categoryPath, SliceRequest request);
@@ -59,6 +61,8 @@ public interface CatalogApi {
 
     List<FacetGroup> findFacetCounts(UUID groupId, List<UUID> matchingSkuIds);
 
+    List<AttributeSummary> findFilterableAttributes(int categoryId);
+
     // ─── Cross-module checks ───────────────────────────────────────────────────
 
     boolean skuExistsAndActive(UUID skuId);
@@ -82,6 +86,11 @@ public interface CatalogApi {
     record CategoryGroup(
             CategoryNode header,
             List<CategoryNode> items
+    ) {}
+
+    record CategorySection(
+            CategoryNode topLevel,
+            List<CategoryGroup> groups
     ) {}
 
     record CategoryBreadcrumb(
@@ -166,4 +175,6 @@ public interface CatalogApi {
             BigDecimal unitPrice,
             String sellUnit
     ) {}
+
+    record AttributeSummary(int id, String key, String label, String dataType, String filterWidget) {}
 }

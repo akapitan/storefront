@@ -51,6 +51,7 @@ class ProductController {
         var slice = catalogApi.browseByCategory(category.path(), sliceRequest);
         var children = catalogApi.findChildCategories(category.id());
         var breadcrumb = catalogApi.findBreadcrumb(category.path());
+        var attributes = catalogApi.findFilterableAttributes(category.id());
 
         model.addAttribute("category", category);
         model.addAttribute("groups", slice.items());
@@ -58,11 +59,12 @@ class ProductController {
         model.addAttribute("nextPage", page + 1);
         model.addAttribute("children", children);
         model.addAttribute("breadcrumb", breadcrumb);
+        model.addAttribute("attributes", attributes);
 
         HtmxResponse.pushUrl(response, "/catalog/category/" + slug + "?page=" + page);
 
         if (HtmxResponse.isHtmxRequest(request)) {
-            return "catalog/category-browse-content";
+            return "catalog/category-browse-content-with-sidebar";
         }
         return "catalog/category-browse";
     }

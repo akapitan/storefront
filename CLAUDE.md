@@ -2,6 +2,25 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## General rule
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+This is EXTREMELY IMPORTANT::
+- Do not make documentation after every code change
+- Don't flatter me. Be charming and nice, but very honest. Tell me something I need to know even if I don't want to hear it
+- Flag unclear but important points before they become problems. Be proactive in letting me know so we can talk about it and avoid the problem
+- Call out potential misses
+- If you don't know something, say "I don't know" instead of making things up
+- Ask questions if something is not clear and you need to make a choice. Don't choose randomly if it's important for what we're doing
+- When you show me a potential error or miss, start your response with❗️emoji
+
+## Project Overview
+- A Spring Boot modular monolith storefront (McMaster-Carr style industrial catalog)
+- Three modules: catalog (browsing/search), inventory (stock), cart (session-based shopping cart)
+- JTE + HTMX frontend with category browsing, product detail, search, and filtering
+- Cart API is defined but no cart controller or templates exist yet
+- No checkout/order module exists
+
 ## Documentation Lookup
 
 When unsure about library APIs or recent changes:

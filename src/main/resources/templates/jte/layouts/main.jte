@@ -2,6 +2,7 @@
 
 @param String title
 @param Content content
+@param Content sidebarContent = null
 
 <!DOCTYPE html>
 <html lang="en">
@@ -27,8 +28,24 @@
 <!-- Main Content Layout -->
 <main>
     <div class="page-layout">
-        <!-- Left Sidebar - Category Navigation -->
-        @template.fragments.sidebar()
+        <!-- Left Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div id="sidebar-content">
+                @if(sidebarContent != null)
+                    ${sidebarContent}
+                @else
+                    <nav class="category-nav">
+                        <h2 class="category-nav-title">Product Categories</h2>
+                        <ul class="category-tree" id="category-tree"
+                            hx-get="/catalog/categories/top-level"
+                            hx-trigger="load"
+                            hx-swap="innerHTML">
+                            <li class="text-muted">Loading categories...</li>
+                        </ul>
+                    </nav>
+                @endif
+            </div>
+        </aside>
 
         <!-- Main Content Area -->
         <div class="main-content" id="main-content">
@@ -95,4 +112,3 @@
 
 </body>
 </html>
-

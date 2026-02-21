@@ -14,10 +14,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -59,6 +62,30 @@ class ProductGroupService implements CatalogApi {
     @Transactional(readOnly = true)
     public List<CategoryNode> findCategoryDescendants(String categoryPath) {
         return categoryRepository.findDescendants(categoryPath);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<CategorySection> findAllCategoriesGrouped() {
+        var all = categoryRepository.findAllWithinDepth((short) 2);
+
+        var byDepth0 = all.stream().filter(n -> n.depth() == 0)
+                .sorted(Comparator.comparingInt(CategoryNode::sortOrder))
+                .toList();
+        var byParent = all.stream().filter(n -> n.parentId() != null)
+                .collect(Collectors.groupingBy(CategoryNode::parentId));
+
+        List<CategorySection> sections = new ArrayList<>();
+        for (var top : byDepth0) {
+            var depth1Children = byParent.getOrDefault(top.id(), List.of());
+            List<CategoryGroup> groups = new ArrayList<>();
+            for (var header : depth1Children) {
+                var leafItems = byParent.getOrDefault(header.id(), List.of());
+                groups.add(new CategoryGroup(header, leafItems));
+            }
+            sections.add(new CategorySection(top, groups));
+        }
+        return sections;
     }
 
     // ─── Product group browse ──────────────────────────────────────────────────
@@ -125,6 +152,12 @@ class ProductGroupService implements CatalogApi {
     @Transactional(readOnly = true)
     public List<FacetGroup> findFacetCounts(UUID groupId, List<UUID> matchingSkuIds) {
         return attributeRepository.findFacetCounts(groupId, matchingSkuIds);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<AttributeSummary> findFilterableAttributes(int categoryId) {
+        return attributeRepository.findFilterableAttributes(categoryId);
     }
 
     // ─── Cross-module checks ───────────────────────────────────────────────────

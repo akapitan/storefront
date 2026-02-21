@@ -1,5 +1,6 @@
 package com.storefront.catalog.infrastructure;
 
+import com.storefront.catalog.CatalogApi.AttributeSummary;
 import com.storefront.catalog.CatalogApi.ColumnConfig;
 import com.storefront.catalog.CatalogApi.FacetGroup;
 import com.storefront.catalog.CatalogApi.FacetOption;
@@ -124,5 +125,27 @@ class JooqAttributeRepository implements AttributeRepository {
         }
 
         return new ArrayList<>(groups.values());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<AttributeSummary> findFilterableAttributes(int categoryId) {
+        return readOnlyDsl
+                .select(ATTRIBUTE_DEFINITIONS.ID,
+                        ATTRIBUTE_DEFINITIONS.KEY,
+                        ATTRIBUTE_DEFINITIONS.LABEL,
+                        ATTRIBUTE_DEFINITIONS.DATA_TYPE,
+                        ATTRIBUTE_DEFINITIONS.FILTER_WIDGET)
+                .from(ATTRIBUTE_DEFINITIONS)
+                .where(ATTRIBUTE_DEFINITIONS.CATEGORY_ID.eq(categoryId)
+                        .and(ATTRIBUTE_DEFINITIONS.IS_FILTERABLE.isTrue()))
+                .orderBy(ATTRIBUTE_DEFINITIONS.FILTER_SORT_ORDER)
+                .fetch(r -> new AttributeSummary(
+                        r.get(ATTRIBUTE_DEFINITIONS.ID),
+                        r.get(ATTRIBUTE_DEFINITIONS.KEY),
+                        r.get(ATTRIBUTE_DEFINITIONS.LABEL),
+                        r.get(ATTRIBUTE_DEFINITIONS.DATA_TYPE),
+                        r.get(ATTRIBUTE_DEFINITIONS.FILTER_WIDGET)
+                ));
     }
 }
