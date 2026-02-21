@@ -1,5 +1,5 @@
-@import com.storefront.catalog.CatalogApi.AttributeSummary
-@import com.storefront.catalog.CatalogApi.CategoryNode
+@import com.storefront.catalog.ProductApi.AttributeSummary
+@import com.storefront.catalog.CategoryApi.CategoryNode
 @import java.util.List
 
 @param CategoryNode category

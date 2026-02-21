@@ -1,4 +1,4 @@
-@import com.storefront.catalog.CatalogApi.ProductGroupSummary
+@import com.storefront.catalog.ProductApi.ProductGroupSummary
 @import java.util.List
 
 @param List<ProductGroupSummary> results

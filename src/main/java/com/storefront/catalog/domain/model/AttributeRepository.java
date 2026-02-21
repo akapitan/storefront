@@ -1,8 +1,8 @@
 package com.storefront.catalog.domain.model;
 
-import com.storefront.catalog.CatalogApi.AttributeSummary;
-import com.storefront.catalog.CatalogApi.ColumnConfig;
-import com.storefront.catalog.CatalogApi.FacetGroup;
+import com.storefront.catalog.ProductApi.AttributeSummary;
+import com.storefront.catalog.ProductApi.ColumnConfig;
+import com.storefront.catalog.ProductApi.FacetGroup;
 
 import java.util.List;
 import java.util.UUID;

@@ -1,6 +1,6 @@
 package com.storefront;
 
-import com.storefront.catalog.CatalogApi;
+import com.storefront.catalog.CategoryApi;
 import com.storefront.shared.web.HtmxResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -12,11 +12,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 @RequiredArgsConstructor
 class HomeController {
 
-    private final CatalogApi catalogApi;
+    private final CategoryApi categoryApi;
 
     @GetMapping("/")
     public String home(HttpServletRequest request, Model model) {
-        var sections = catalogApi.findAllCategoriesGrouped();
+        var sections = categoryApi.findAllCategoriesGrouped();
         model.addAttribute("sections", sections);
 
         if (HtmxResponse.isHtmxRequest(request)) {

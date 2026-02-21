@@ -1,6 +1,6 @@
-@import com.storefront.catalog.CatalogApi.ProductGroupDetail
-@import com.storefront.catalog.CatalogApi.ColumnConfig
-@import com.storefront.catalog.CatalogApi.SkuRow
+@import com.storefront.catalog.ProductApi.ProductGroupDetail
+@import com.storefront.catalog.ProductApi.ColumnConfig
+@import com.storefront.catalog.ProductApi.SkuRow
 @import com.fasterxml.jackson.databind.ObjectMapper
 @import java.util.List
 

@@ -1,7 +1,7 @@
 package com.storefront.catalog.infrastructure;
 
-import com.storefront.catalog.CatalogApi.ProductGroupDetail;
-import com.storefront.catalog.CatalogApi.ProductGroupSummary;
+import com.storefront.catalog.ProductApi.ProductGroupDetail;
+import com.storefront.catalog.ProductApi.ProductGroupSummary;
 import com.storefront.catalog.domain.model.ProductGroupRepository;
 import com.storefront.shared.PageRequest;
 import com.storefront.shared.Pagination;

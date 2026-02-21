@@ -1,7 +1,7 @@
-@import com.storefront.catalog.CatalogApi.CategoryNode
-@import com.storefront.catalog.CatalogApi.CategoryBreadcrumb
-@import com.storefront.catalog.CatalogApi.ProductGroupSummary
-@import com.storefront.catalog.CatalogApi.AttributeSummary
+@import com.storefront.catalog.CategoryApi.CategoryNode
+@import com.storefront.catalog.CategoryApi.CategoryBreadcrumb
+@import com.storefront.catalog.ProductApi.ProductGroupSummary
+@import com.storefront.catalog.ProductApi.AttributeSummary
 @import java.util.List
 
 @param CategoryNode category

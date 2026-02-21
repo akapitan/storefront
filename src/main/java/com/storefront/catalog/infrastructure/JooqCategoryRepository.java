@@ -1,7 +1,7 @@
 package com.storefront.catalog.infrastructure;
 
-import com.storefront.catalog.CatalogApi.CategoryBreadcrumb;
-import com.storefront.catalog.CatalogApi.CategoryNode;
+import com.storefront.catalog.CategoryApi.CategoryBreadcrumb;
+import com.storefront.catalog.CategoryApi.CategoryNode;
 import com.storefront.catalog.domain.model.CategoryRepository;
 import org.jooq.DSLContext;
 import org.jooq.Record;

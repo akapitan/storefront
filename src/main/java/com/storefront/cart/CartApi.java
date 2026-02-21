@@ -27,7 +27,7 @@ public interface CartApi {
     /**
      * Add item to cart or increase quantity if already present.
      * Validates:
-     *   - SKU exists and is active (via CatalogApi)
+     *   - SKU exists and is active (via ProductApi)
      *   - SKU is in stock (via InventoryApi)
      *   - Quantity doesn't exceed maximum (999)
      */

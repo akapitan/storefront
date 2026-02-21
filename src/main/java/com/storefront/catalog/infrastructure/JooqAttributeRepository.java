@@ -1,9 +1,9 @@
 package com.storefront.catalog.infrastructure;
 
-import com.storefront.catalog.CatalogApi.AttributeSummary;
-import com.storefront.catalog.CatalogApi.ColumnConfig;
-import com.storefront.catalog.CatalogApi.FacetGroup;
-import com.storefront.catalog.CatalogApi.FacetOption;
+import com.storefront.catalog.ProductApi.AttributeSummary;
+import com.storefront.catalog.ProductApi.ColumnConfig;
+import com.storefront.catalog.ProductApi.FacetGroup;
+import com.storefront.catalog.ProductApi.FacetOption;
 import com.storefront.catalog.domain.model.AttributeRepository;
 import org.jooq.DSLContext;
 import org.jooq.impl.DSL;
