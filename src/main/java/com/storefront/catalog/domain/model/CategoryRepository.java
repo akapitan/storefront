@@ -1,7 +1,7 @@
 package com.storefront.catalog.domain.model;
 
-import com.storefront.catalog.CatalogApi.CategoryBreadcrumb;
-import com.storefront.catalog.CatalogApi.CategoryNode;
+import com.storefront.catalog.CategoryApi.CategoryBreadcrumb;
+import com.storefront.catalog.CategoryApi.CategoryNode;
 
 import java.util.List;
 import java.util.Optional;

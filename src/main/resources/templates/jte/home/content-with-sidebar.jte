@@ -1,4 +1,4 @@
-@import com.storefront.catalog.CatalogApi.CategorySection
+@import com.storefront.catalog.CategoryApi.CategorySection
 @import java.util.List
 
 @param List<CategorySection> sections = java.util.List.of()

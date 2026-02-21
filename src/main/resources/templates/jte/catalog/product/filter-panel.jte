@@ -1,5 +1,5 @@
-@import com.storefront.catalog.CatalogApi.ProductGroupDetail
-@import com.storefront.catalog.CatalogApi.FacetGroup
+@import com.storefront.catalog.ProductApi.ProductGroupDetail
+@import com.storefront.catalog.ProductApi.FacetGroup
 @import java.util.List
 
 @param ProductGroupDetail group

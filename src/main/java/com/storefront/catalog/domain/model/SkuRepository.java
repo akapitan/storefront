@@ -1,8 +1,8 @@
 package com.storefront.catalog.domain.model;
 
-import com.storefront.catalog.CatalogApi.NumericRange;
-import com.storefront.catalog.CatalogApi.SkuPriceInfo;
-import com.storefront.catalog.CatalogApi.SkuRow;
+import com.storefront.catalog.ProductApi.NumericRange;
+import com.storefront.catalog.ProductApi.SkuPriceInfo;
+import com.storefront.catalog.ProductApi.SkuRow;
 
 import java.util.List;
 import java.util.Map;

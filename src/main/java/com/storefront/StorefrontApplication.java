@@ -8,7 +8,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
 /**
  * StorefrontApplication — single deployable Spring Boot modulith.
  * Modules:
- *   com.storefront.catalog   — products, categories (public: CatalogApi)
+ *   com.storefront.catalog   — products, categories (public: CategoryApi, ProductApi, SearchApi)
  *   com.storefront.inventory — stock, warehouse   (public: InventoryApi)
  *   com.storefront.shared    — shared kernel       (visible to all modules)
  *   com.storefront.config    — cross-cutting infra

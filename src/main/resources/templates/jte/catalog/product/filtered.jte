@@ -1,7 +1,7 @@
-@import com.storefront.catalog.CatalogApi.ProductGroupDetail
-@import com.storefront.catalog.CatalogApi.ColumnConfig
-@import com.storefront.catalog.CatalogApi.SkuRow
-@import com.storefront.catalog.CatalogApi.FacetGroup
+@import com.storefront.catalog.ProductApi.ProductGroupDetail
+@import com.storefront.catalog.ProductApi.ColumnConfig
+@import com.storefront.catalog.ProductApi.SkuRow
+@import com.storefront.catalog.ProductApi.FacetGroup
 @import java.util.List
 
 @param ProductGroupDetail group
