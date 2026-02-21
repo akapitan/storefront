@@ -4,6 +4,7 @@ import com.storefront.shared.Slice;
 import com.storefront.shared.SliceRequest;
 
 import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -35,6 +36,10 @@ public interface ProductApi {
     List<FacetGroup> findFacetCounts(UUID groupId, List<UUID> matchingSkuIds);
 
     List<AttributeSummary> findFilterableAttributes(int categoryId);
+
+    // ─── Bulk lookups ─────────────────────────────────────────────────────
+
+    List<ProductGroupSummary> findProductGroupSummariesByIds(Collection<UUID> ids);
 
     // ─── Cross-module checks ───────────────────────────────────────────────────
 
@@ -109,6 +114,7 @@ public interface ProductApi {
             Integer optionId,
             String value,
             String displayValue,
+            String imageUrl,
             int skuCount
     ) {}
 

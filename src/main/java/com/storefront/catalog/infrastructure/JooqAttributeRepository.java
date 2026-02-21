@@ -78,6 +78,7 @@ class JooqAttributeRepository implements AttributeRepository {
                         ATTRIBUTE_OPTIONS.ID.as("option_id"),
                         ATTRIBUTE_OPTIONS.VALUE,
                         ATTRIBUTE_OPTIONS.DISPLAY_VALUE,
+                        ATTRIBUTE_OPTIONS.IMAGE_URL,
                         DSL.count(SKU_ATTRIBUTES.SKU_ID).as("sku_count")
                 )
                 .from(ATTRIBUTE_DEFINITIONS)
@@ -97,7 +98,8 @@ class JooqAttributeRepository implements AttributeRepository {
                         ATTRIBUTE_DEFINITIONS.LABEL, ATTRIBUTE_DEFINITIONS.FILTER_WIDGET,
                         ATTRIBUTE_DEFINITIONS.UNIT_LABEL,
                         ATTRIBUTE_OPTIONS.ID, ATTRIBUTE_OPTIONS.VALUE,
-                        ATTRIBUTE_OPTIONS.DISPLAY_VALUE, ATTRIBUTE_OPTIONS.SORT_ORDER,
+                        ATTRIBUTE_OPTIONS.DISPLAY_VALUE, ATTRIBUTE_OPTIONS.IMAGE_URL,
+                        ATTRIBUTE_OPTIONS.SORT_ORDER,
                         PRODUCT_GROUP_COLUMNS.SORT_ORDER)
                 .orderBy(PRODUCT_GROUP_COLUMNS.SORT_ORDER, ATTRIBUTE_OPTIONS.SORT_ORDER)
                 .fetch();
@@ -120,6 +122,7 @@ class JooqAttributeRepository implements AttributeRepository {
                     optionId,
                     r.get(ATTRIBUTE_OPTIONS.VALUE),
                     r.get(ATTRIBUTE_OPTIONS.DISPLAY_VALUE),
+                    r.get(ATTRIBUTE_OPTIONS.IMAGE_URL),
                     r.get("sku_count", Integer.class)
             ));
         }

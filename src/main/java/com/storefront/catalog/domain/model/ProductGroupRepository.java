@@ -7,8 +7,10 @@ import com.storefront.shared.Pagination;
 import com.storefront.shared.Slice;
 import com.storefront.shared.SliceRequest;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 public interface ProductGroupRepository {
 
@@ -19,4 +21,6 @@ public interface ProductGroupRepository {
     Pagination<ProductGroupSummary> search(String query, PageRequest request);
 
     List<ProductGroupSummary> searchDropdown(String query, int limit);
+
+    List<ProductGroupSummary> findSummariesByIds(Collection<UUID> ids);
 }

@@ -15,8 +15,10 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import static com.storefront.jooq.Tables.CATEGORIES;
 import static com.storefront.jooq.Tables.PRODUCT_GROUPS;
@@ -145,6 +147,21 @@ class JooqProductGroupRepository implements ProductGroupRepository {
                 .where(condition.or(trigramCondition))
                 .orderBy(rank.desc())
                 .limit(limit)
+                .fetch(this::toSummary);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ProductGroupSummary> findSummariesByIds(Collection<UUID> ids) {
+        if (ids == null || ids.isEmpty()) return List.of();
+        return readOnlyDsl
+                .select(PRODUCT_GROUPS.ID, PRODUCT_GROUPS.NAME, PRODUCT_GROUPS.SUBTITLE,
+                        PRODUCT_GROUPS.SLUG, PRODUCT_GROUPS.OVERVIEW_IMAGE_URL,
+                        PRODUCT_GROUPS.SKU_COUNT, PRODUCT_GROUPS.MIN_PRICE_USD,
+                        PRODUCT_GROUPS.ANY_IN_STOCK)
+                .from(PRODUCT_GROUPS)
+                .where(PRODUCT_GROUPS.ID.in(ids).and(PRODUCT_GROUPS.IS_ACTIVE.isTrue()))
+                .orderBy(PRODUCT_GROUPS.SORT_ORDER, PRODUCT_GROUPS.NAME)
                 .fetch(this::toSummary);
     }
 

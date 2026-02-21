@@ -1,0 +1,9 @@
+spring:
+  flyway:
+    enabled: true
+  data:
+    redis:
+      host: localhost
+      port: 6379
+  cache:
+    type: none   # disable Redis cache in tests — avoids needing Redis container

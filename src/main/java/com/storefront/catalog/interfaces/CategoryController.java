@@ -2,7 +2,6 @@ package com.storefront.catalog.interfaces;
 
 import com.storefront.catalog.CategoryApi;
 import com.storefront.catalog.ProductApi;
-import com.storefront.shared.SliceRequest;
 import com.storefront.shared.web.HtmxResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -11,6 +10,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+
+import java.util.Map;
 
 @Controller
 @RequestMapping("/catalog")
@@ -22,38 +24,57 @@ class CategoryController {
 
     @GetMapping("/categories/top-level")
     public String topLevelCategories(Model model) {
-        var categories = categoryApi.findTopLevelCategories();
-        model.addAttribute("categories", categories);
+        model.addAttribute("categories", categoryApi.findTopLevelCategories());
         return "catalog/category/top-level";
     }
 
     @GetMapping("/category/{slug}")
     public String browseCategory(
             @PathVariable String slug,
-            @RequestParam(defaultValue = "0")  int page,
-            @RequestParam(defaultValue = "48") int size,
-            HttpServletRequest  request,
+            @RequestParam Map<String, String> allParams,
+            HttpServletRequest request,
             HttpServletResponse response,
             Model model) {
 
         var category = categoryApi.findCategoryBySlug(slug)
                 .orElseThrow(() -> new CategoryNotFoundException(slug));
 
-        var sliceRequest = SliceRequest.of(page, size);
-        var slice = productApi.browseByCategory(category.path(), sliceRequest);
-        var children = categoryApi.findChildCategories(category.id());
-        var breadcrumb = categoryApi.findBreadcrumb(category.path());
-        var attributes = productApi.findFilterableAttributes(category.id());
+        var parsed = FilterParamParser.parse(allParams);
+        var enumFilters = parsed.enumFilters();
+        var rangeFilters = parsed.rangeFilters();
 
         model.addAttribute("category", category);
-        model.addAttribute("groups", slice.items());
-        model.addAttribute("hasMore", slice.hasMore());
-        model.addAttribute("nextPage", page + 1);
-        model.addAttribute("children", children);
-        model.addAttribute("breadcrumb", breadcrumb);
-        model.addAttribute("attributes", attributes);
+        model.addAttribute("breadcrumb", categoryApi.findBreadcrumb(category.path()));
 
-        HtmxResponse.pushUrl(response, "/catalog/category/" + slug + "?page=" + page);
+        HtmxResponse.pushUrl(response, buildUrl(slug, allParams));
+
+        String viewMode;
+        if (category.depth() == 0) {
+            viewMode = "top-level";
+            model.addAttribute("children", categoryApi.findChildCategories(category.id()));
+
+        } else if (!category.isLeaf()) {
+            viewMode = "mid-level";
+            model.addAttribute("filteredChildren",
+                    categoryApi.findFilteredChildren(category.id(), category.path(),
+                            enumFilters, rangeFilters));
+            model.addAttribute("facets",
+                    categoryApi.findMidLevelFacets(category.path(), enumFilters, rangeFilters));
+            model.addAttribute("enumFilters", enumFilters);
+            model.addAttribute("rangeFilters", rangeFilters);
+
+        } else {
+            viewMode = "leaf";
+            model.addAttribute("groupTables",
+                    categoryApi.findLeafGroupTables(category.id(), category.path(),
+                            enumFilters, rangeFilters));
+            model.addAttribute("facets",
+                    categoryApi.findLeafFacets(category.id(), enumFilters, rangeFilters));
+            model.addAttribute("enumFilters", enumFilters);
+            model.addAttribute("rangeFilters", rangeFilters);
+        }
+
+        model.addAttribute("viewMode", viewMode);
 
         if (HtmxResponse.isHtmxRequest(request)) {
             return "catalog/category/content-with-sidebar";
@@ -62,16 +83,23 @@ class CategoryController {
     }
 
     @GetMapping("/category/{slug}/children")
-    public String categoryChildren(
-            @PathVariable String slug,
-            Model model) {
-
+    public String categoryChildren(@PathVariable String slug, Model model) {
         var category = categoryApi.findCategoryBySlug(slug)
                 .orElseThrow(() -> new CategoryNotFoundException(slug));
-
-        var children = categoryApi.findChildCategories(category.id());
-        model.addAttribute("children", children);
+        model.addAttribute("children", categoryApi.findChildCategories(category.id()));
         return "catalog/category/children";
+    }
+
+    private String buildUrl(String slug, Map<String, String> params) {
+        var builder = ServletUriComponentsBuilder
+                .fromCurrentRequest()
+                .replacePath("/catalog/category/{slug}");
+
+        params.entrySet().stream()
+                .filter(e -> e.getKey().startsWith("enum_") || e.getKey().startsWith("range_"))
+                .forEach(e -> builder.queryParam(e.getKey(), e.getValue()));
+
+        return builder.buildAndExpand(slug).toUriString();
     }
 
     @ResponseStatus(HttpStatus.NOT_FOUND)

@@ -10,8 +10,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
-import java.util.*;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/catalog")
@@ -60,9 +59,9 @@ class ProductController {
 
         var columns = productApi.findColumnConfig(group.id());
 
-        Map<Integer, List<Integer>> enumFilters = new HashMap<>();
-        Map<Integer, ProductApi.NumericRange> rangeFilters = new HashMap<>();
-        parseFilterParams(allParams, enumFilters, rangeFilters);
+        var parsed = FilterParamParser.parse(allParams);
+        var enumFilters = parsed.enumFilters();
+        var rangeFilters = parsed.rangeFilters();
 
         var matchingSkuIds = productApi.findMatchingSkuIds(group.id(), enumFilters, rangeFilters);
         var skuRows = productApi.findVariantTable(group.id(), matchingSkuIds);
@@ -75,41 +74,6 @@ class ProductController {
         model.addAttribute("activeFilters", allParams);
 
         return "catalog/product/filtered";
-    }
-
-    private void parseFilterParams(Map<String, String> params,
-                                    Map<Integer, List<Integer>> enumFilters,
-                                    Map<Integer, ProductApi.NumericRange> rangeFilters) {
-        for (var entry : params.entrySet()) {
-            String key = entry.getKey();
-            String value = entry.getValue();
-
-            if (key.startsWith("enum_") && !value.isBlank()) {
-                try {
-                    int attrId = Integer.parseInt(key.substring(5));
-                    List<Integer> optionIds = Arrays.stream(value.split(","))
-                            .map(String::trim)
-                            .filter(s -> !s.isEmpty())
-                            .map(Integer::parseInt)
-                            .toList();
-                    if (!optionIds.isEmpty()) {
-                        enumFilters.put(attrId, optionIds);
-                    }
-                } catch (NumberFormatException ignored) {}
-            }
-
-            if (key.startsWith("range_min_") && !value.isBlank()) {
-                try {
-                    int attrId = Integer.parseInt(key.substring(10));
-                    BigDecimal min = new BigDecimal(value);
-                    String maxKey = "range_max_" + attrId;
-                    BigDecimal max = params.containsKey(maxKey)
-                            ? new BigDecimal(params.get(maxKey))
-                            : new BigDecimal("999999");
-                    rangeFilters.put(attrId, new ProductApi.NumericRange(min, max));
-                } catch (NumberFormatException ignored) {}
-            }
-        }
     }
 
     @ResponseStatus(HttpStatus.NOT_FOUND)

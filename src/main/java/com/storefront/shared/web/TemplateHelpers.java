@@ -1,5 +1,6 @@
 package com.storefront.shared.web;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -63,6 +64,23 @@ public final class TemplateHelpers {
      */
     public static String classIf(boolean condition, String ifTrue, String ifFalse) {
         return condition ? ifTrue : ifFalse;
+    }
+
+    private static final ObjectMapper MAPPER = new ObjectMapper();
+
+    /**
+     * Extract a value from a JSON specs string by key.
+     * Returns empty string on null input or missing key.
+     */
+    public static String getSpec(String specsJson, String key) {
+        if (specsJson == null || specsJson.isBlank()) return "";
+        try {
+            var node = MAPPER.readTree(specsJson);
+            var val = node.get(key);
+            return val != null ? val.asText() : "";
+        } catch (Exception e) {
+            return "";
+        }
     }
 }
 

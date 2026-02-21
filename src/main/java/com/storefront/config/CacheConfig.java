@@ -43,6 +43,8 @@ import java.util.Map;
  * │ product-listing     │ L2    │ 30 sec  │ Category browse pages            │
  * │ search-results      │ L2    │ 30 sec  │ Search query result sets         │
  * │ inventory           │ L2    │ 15 sec  │ Stock levels (changes often)     │
+ * │ category-browse     │ L2    │ 30 sec  │ Filtered children + group tables │
+ * │ category-facets     │ L2    │ 30 sec  │ Facet counts for category browse  │
  * │ user-session        │ L2    │ 30 min  │ Auth + cart state                │
  * └─────────────────────┴───────┴─────────┴──────────────────────────────────┘
  */
@@ -56,6 +58,8 @@ class CacheConfig {
     private static final String CACHE_PRODUCT_LISTING = "product-listing";
     private static final String CACHE_SEARCH_RESULTS = "search-results";
     private static final String CACHE_INVENTORY = "inventory";
+    private static final String CACHE_CATEGORY_BROWSE = "category-browse";
+    private static final String CACHE_CATEGORY_FACETS = "category-facets";
     private static final String CACHE_USER_SESSION = "user-session";
     private static final String REDIS_KEY_PREFIX = "storefront:";
 
@@ -111,6 +115,8 @@ class CacheConfig {
                 CACHE_PRODUCT_LISTING, base.entryTtl(Duration.ofSeconds(30)),
                 CACHE_SEARCH_RESULTS, base.entryTtl(Duration.ofSeconds(30)),
                 CACHE_INVENTORY, base.entryTtl(Duration.ofSeconds(15)),
+                CACHE_CATEGORY_BROWSE, base.entryTtl(Duration.ofSeconds(30)),
+                CACHE_CATEGORY_FACETS, base.entryTtl(Duration.ofSeconds(30)),
                 CACHE_USER_SESSION, base.entryTtl(Duration.ofMinutes(30))
         );
 
