@@ -3,7 +3,6 @@
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## General rule
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 This is EXTREMELY IMPORTANT::
 - Do not make documentation after every code change
@@ -136,16 +135,18 @@ When working on this project, ALWAYS check if a skill applies before starting wo
 ### Tier 1 — Architect (entry point for non-trivial tasks)
 - Skill: `/storefront-architect`
 - Invoke for: any feature, new module, significant change, or bug fix
-- The Architect routes to the correct Tier 2 skill
+- The Architect analyzes the task, presents a plan, dispatches sub-agents, verifies, and opens a PR
 
 ### Tier 2 — Domain Orchestrators
-- `/storefront-add-module` — new bounded context / module
-- (future: storefront-add-entity, storefront-cross-module, storefront-jte-htmx)
+- `/storefront-add-module` — new bounded context / module (orchestrates all Tier 3 skills)
+- (future: storefront-add-entity, storefront-cross-module)
 
 ### Tier 3 — Building Blocks (invoked by Tier 2, or directly for targeted changes)
-- `/storefront-schema` — Flyway migrations + jOOQ code generation + mappers
+- `/storefront-schema` — Flyway migrations + jOOQ code generation
 - `/storefront-domain-layer` — Value objects, aggregates, events, repository interfaces
-- `/storefront-wiring-layer` — jOOQ repository impls, application services, controllers, DTOs, templates
+- `/storefront-repository` — jOOQ repository implementations, mappers, caching
+- `/storefront-application` — Application services, public API interfaces, event publishing
+- `/storefront-presentation` — Controllers, DTOs, JTE templates, HTMX handling
 - `/storefront-branch-setup` — ensures isolated worktree before non-trivial work begins
 - `/storefront-git-workflow` — per-phase conventional commits + finishing flow (merge/PR/keep/discard)
 
