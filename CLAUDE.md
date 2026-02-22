@@ -146,6 +146,8 @@ When working on this project, ALWAYS check if a skill applies before starting wo
 - `/storefront-schema` — Flyway migrations + jOOQ code generation + mappers
 - `/storefront-domain-layer` — Value objects, aggregates, events, repository interfaces
 - `/storefront-wiring-layer` — jOOQ repository impls, application services, controllers, DTOs, templates
+- `/storefront-branch-setup` — ensures isolated worktree before non-trivial work begins
+- `/storefront-git-workflow` — per-phase conventional commits + finishing flow (merge/PR/keep/discard)
 
 ### Meta
 - `/storefront-suggest-improvement` — auto-invoked after task completion, proposes skill updates when patterns diverge from rules
