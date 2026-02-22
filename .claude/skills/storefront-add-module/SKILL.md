@@ -1,6 +1,6 @@
 ---
 name: storefront-add-module
-description: Use when creating a new Spring Modulith module (bounded context) in the storefront project. Orchestrates schema, domain, and wiring layer creation with full DDD rules.
+description: Use when creating a new Spring Modulith module (bounded context) in the storefront project. Orchestrates schema, domain, repository, application, and presentation layer creation with full DDD rules.
 argument-hint: "[module-name]"
 ---
 
@@ -50,24 +50,37 @@ Execute these skills in order. Each must complete before the next begins.
 Invoke `/storefront-schema` with the module name.
 - Creates Flyway migration with tables for the module
 - Runs `./gradlew generateJooqClasses` to generate jOOQ classes
-- Invoke `/storefront-git-workflow schema(<module>): Add <module> database tables`
+- Commit after this phase
 
 ### Phase 2: Domain Layer
 Invoke `/storefront-domain-layer` with the module name.
 - Creates value objects (IDs), aggregate root, domain events, repository interface
-- Invoke `/storefront-git-workflow domain(<module>): Add <Module> aggregate, IDs, and domain events`
+- Commit after this phase
 
-### Phase 3: Wiring Layer
-Invoke `/storefront-wiring-layer` with the module name.
-- Creates jOOQ repository implementation, application service, public API impl, controller, DTOs
-- Invoke `/storefront-git-workflow wiring(<module>): Add <Module> repository, service, and controller`
+### Phase 3: Repository
+Invoke `/storefront-repository` with the module name.
+- Creates jOOQ repository implementation with read/write splitting
+- Creates mapper methods for domain entity round-tripping
+- Commit after this phase
 
-### Phase 4: Module Verification
+### Phase 4: Application
+Invoke `/storefront-application` with the module name.
+- Creates the public API interface at module root
+- Creates the application service implementing the API
+- Sets up event publishing
+- Commit after this phase
+
+### Phase 5: Presentation
+Invoke `/storefront-presentation` with the module name.
+- Creates controller with HTMX handling
+- Creates JTE templates (page + fragment for each view)
+- Commit after this phase
+
+### Phase 6: Module Verification
 After all phases:
 
 1. **Spring Modulith test** — verify module boundaries:
    ```java
-   // src/test/java/com/storefront/<module>/<ModuleName>ModuleTest.java
    @SpringBootTest
    class <ModuleName>ModuleTest extends BaseIntegrationTest {
        @Test
@@ -82,7 +95,7 @@ After all phases:
    ./gradlew build
    ```
 
-3. **Invoke `/storefront-git-workflow test(<module>): Add Spring Modulith verification test`**
+3. **Commit the test and any fixes**
 
 ## Checklist Before Marking Complete
 
