@@ -39,19 +39,21 @@ Analyze the user's request and route to the correct skill:
 
 ## Process
 
+0. **Ensure isolated workspace** — invoke `/storefront-branch-setup` to verify work is not on master/main.
 1. **Read the request** — what is the user asking for?
 2. **Classify** — which row in the routing table matches?
 3. **Check strategic DDD** — does this violate any bounded context rules?
 4. **If cross-module:** identify which modules are affected and the relationship between them. Present this to the user before proceeding.
 5. **Delegate** — invoke the appropriate skill via the Skill tool.
 6. **After completion:** invoke `/storefront-suggest-improvement` to check for skill drift.
+7. **Finish:** invoke `/storefront-git-workflow finish` to trigger the branch finishing flow (merge/PR/keep/discard).
 
 ## When Multiple Skills Apply
 
 If a task requires multiple skills (e.g., new entity needs schema + domain + wiring):
 1. Invoke them **in order**: schema → domain-layer → wiring-layer
 2. Each skill handles its own layer completely before the next begins
-3. Commit after each layer if the changes are independently valid
+3. Invoke `/storefront-git-workflow` after each layer to commit with conventional message
 
 ## Red Flags — Stop and Discuss
 
