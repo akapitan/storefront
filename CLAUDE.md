@@ -127,3 +127,25 @@ PostgreSQL with full-text search (`tsvector` + trigram indexes), JSONB product a
 
 - **Slice** (no COUNT query, fetches N+1 rows) — used for infinite scroll
 - **Pagination** (includes total count) — used for search results with page numbers
+
+## Skill System
+
+This project uses a three-tier skill system in `.claude/skills/`.
+When working on this project, ALWAYS check if a skill applies before starting work.
+
+### Tier 1 — Architect (entry point for non-trivial tasks)
+- Skill: `/storefront-architect`
+- Invoke for: any feature, new module, significant change, or bug fix
+- The Architect routes to the correct Tier 2 skill
+
+### Tier 2 — Domain Orchestrators
+- `/storefront-add-module` — new bounded context / module
+- (future: storefront-add-entity, storefront-cross-module, storefront-jte-htmx)
+
+### Tier 3 — Building Blocks (invoked by Tier 2, or directly for targeted changes)
+- `/storefront-schema` — Flyway migrations + jOOQ code generation + mappers
+- `/storefront-domain-layer` — Value objects, aggregates, events, repository interfaces
+- `/storefront-wiring-layer` — jOOQ repository impls, application services, controllers, DTOs, templates
+
+### Meta
+- `/storefront-suggest-improvement` — auto-invoked after task completion, proposes skill updates when patterns diverge from rules
