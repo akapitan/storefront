@@ -50,31 +50,31 @@ Execute these skills in order. Each must complete before the next begins.
 Invoke `/storefront-schema` with the module name.
 - Creates Flyway migration with tables for the module
 - Runs `./gradlew generateJooqClasses` to generate jOOQ classes
-- Commit after this phase
+- Invoke `/storefront-git-workflow schema(<module>): Add <module> database tables`
 
 ### Phase 2: Domain Layer
 Invoke `/storefront-domain-layer` with the module name.
 - Creates value objects (IDs), aggregate root, domain events, repository interface
-- Commit after this phase
+- Invoke `/storefront-git-workflow domain(<module>): Add <Module> aggregate, IDs, and domain events`
 
 ### Phase 3: Repository
 Invoke `/storefront-repository` with the module name.
 - Creates jOOQ repository implementation with read/write splitting
 - Creates mapper methods for domain entity round-tripping
-- Commit after this phase
+- Invoke `/storefront-git-workflow wiring(<module>): Add <Module> jOOQ repository and mappers`
 
 ### Phase 4: Application
 Invoke `/storefront-application` with the module name.
 - Creates the public API interface at module root
 - Creates the application service implementing the API
 - Sets up event publishing
-- Commit after this phase
+- Invoke `/storefront-git-workflow wiring(<module>): Add <Module> application service and public API`
 
 ### Phase 5: Presentation
 Invoke `/storefront-presentation` with the module name.
 - Creates controller with HTMX handling
 - Creates JTE templates (page + fragment for each view)
-- Commit after this phase
+- Invoke `/storefront-git-workflow wiring(<module>): Add <Module> controller and JTE templates`
 
 ### Phase 6: Module Verification
 After all phases:
@@ -95,7 +95,7 @@ After all phases:
    ./gradlew build
    ```
 
-3. **Commit the test and any fixes**
+3. **Invoke `/storefront-git-workflow test(<module>): Add Spring Modulith verification test`**
 
 ## Checklist Before Marking Complete
 

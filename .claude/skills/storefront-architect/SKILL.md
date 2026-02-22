@@ -18,7 +18,11 @@ You are the orchestrator for all non-trivial storefront work. You **analyze**, *
 4. **Context mapping:** Before any cross-module work, identify the relationship (upstream/downstream, conformist, ACL) and document it.
 5. **New module checklist:** Clear bounded context? Owns its own data? Has a public API interface at module root?
 
-## Process: Analyze → Plan → Dispatch → Verify → PR
+## Process: Setup → Analyze → Plan → Dispatch → Verify → PR → Finish
+
+### Step 0: Ensure Isolated Workspace
+
+Invoke `/storefront-branch-setup` to verify work is not on master/main. If already on a feature branch, this returns immediately.
 
 ### Step 1: Analyze
 
@@ -151,6 +155,10 @@ Read .claude/skills/storefront-suggest-improvement/SKILL.md
 Dispatch as Task tool agent to review the work for skill drift
 Present any proposals to the user
 ```
+
+### Step 7: Finish
+
+Invoke `/storefront-git-workflow finish` to trigger the branch finishing flow (merge/PR/keep/discard).
 
 ## Red Flags — Stop and Discuss
 
