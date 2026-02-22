@@ -135,7 +135,7 @@ public interface OrderRepository {
 - Lives in `domain/model/` (NOT infrastructure)
 - Method signatures use ONLY domain types (value objects, entities, `Slice`, `Pagination`)
 - No jOOQ types, no Spring types in the interface
-- Implementation goes in `infrastructure/` (handled by `/storefront-wiring-layer`)
+- Implementation goes in `infrastructure/` (handled by `/storefront-repository`)
 
 ## Domain Exceptions
 
