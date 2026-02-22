@@ -1,15 +1,11 @@
 ---
 name: storefront-architect
-description: Use when starting any non-trivial task on the storefront project — new features, new modules, significant changes, or bug fixes. Routes to the correct specialized skill based on task analysis. Invoke BEFORE writing any code.
+description: Use when starting any non-trivial task on the storefront project — new features, new modules, significant changes, or bug fixes. Analyzes the task, presents an execution plan, dispatches sub-agents, verifies the build, and opens a PR.
 ---
 
 # Storefront Architect
 
-You are the entry point for all non-trivial storefront work. Your job is to **analyze the task** and **delegate to the right specialized skill**.
-
-## HARD GATE
-
-Do NOT write implementation code. Your job is analysis and routing ONLY. Delegate implementation to the appropriate skill.
+You are the orchestrator for all non-trivial storefront work. You **analyze**, **plan**, **dispatch agents**, **verify**, and **deliver** (PR).
 
 ## Strategic DDD Rules (enforce at all times)
 
@@ -22,38 +18,139 @@ Do NOT write implementation code. Your job is analysis and routing ONLY. Delegat
 4. **Context mapping:** Before any cross-module work, identify the relationship (upstream/downstream, conformist, ACL) and document it.
 5. **New module checklist:** Clear bounded context? Owns its own data? Has a public API interface at module root?
 
-## Routing Table
+## Process: Analyze → Plan → Dispatch → Verify → PR
 
-Analyze the user's request and route to the correct skill:
+### Step 1: Analyze
 
-| If the task involves...              | Invoke this skill                          |
-|--------------------------------------|--------------------------------------------|
-| New module / bounded context         | `/storefront-add-module`                   |
-| New entity in existing module        | `/storefront-domain-layer` then `/storefront-wiring-layer` |
-| Schema/migration change only         | `/storefront-schema`                       |
-| Domain model change only             | `/storefront-domain-layer`                 |
-| Controller/service/DTO change only   | `/storefront-wiring-layer`                 |
-| Bug fix                              | `superpowers-extended-cc:systematic-debugging` |
-| Creative / new feature (unclear scope) | `superpowers-extended-cc:brainstorming` first, then re-route |
-| Cross-module change                  | Analyze context mapping first, then route to affected modules |
+Read the user's request and classify it:
 
-## Process
+| If the task involves...              | Skills to dispatch                                                |
+|--------------------------------------|-------------------------------------------------------------------|
+| New module / bounded context         | schema → domain-layer → repository → application → presentation  |
+| New entity in existing module        | domain-layer → repository → application → presentation           |
+| Schema/migration change only         | schema                                                            |
+| Domain model change only             | domain-layer                                                      |
+| Repository change only               | repository                                                        |
+| Service/API change only              | application                                                       |
+| Controller/template change only      | presentation                                                      |
+| Bug fix                              | Use `superpowers-extended-cc:systematic-debugging`                |
+| Creative / unclear scope             | Use `superpowers-extended-cc:brainstorming` first, then re-route  |
+| Cross-module change                  | Analyze context mapping, then dispatch per affected module        |
 
-0. **Ensure isolated workspace** — invoke `/storefront-branch-setup` to verify work is not on master/main.
-1. **Read the request** — what is the user asking for?
-2. **Classify** — which row in the routing table matches?
-3. **Check strategic DDD** — does this violate any bounded context rules?
-4. **If cross-module:** identify which modules are affected and the relationship between them. Present this to the user before proceeding.
-5. **Delegate** — invoke the appropriate skill via the Skill tool.
-6. **After completion:** invoke `/storefront-suggest-improvement` to check for skill drift.
-7. **Finish:** invoke `/storefront-git-workflow finish` to trigger the branch finishing flow (merge/PR/keep/discard).
+### Step 2: Plan
 
-## When Multiple Skills Apply
+Build an execution plan and present it to the user:
 
-If a task requires multiple skills (e.g., new entity needs schema + domain + wiring):
-1. Invoke them **in order**: schema → domain-layer → wiring-layer
-2. Each skill handles its own layer completely before the next begins
-3. Invoke `/storefront-git-workflow` after each layer to commit with conventional message
+```
+## Execution Plan
+
+**Task:** [description]
+**Phases:**
+
+1. [Phase name] — [what will be done]
+   Files: [files to create/modify]
+   Agent: [skill name]
+
+2. [Phase name] — [what will be done]
+   Files: [files to create/modify]
+   Agent: [skill name]
+
+...
+
+**After all phases:** build + test → PR
+
+Approve? [Yes / Modify / Cancel]
+```
+
+Wait for user approval before proceeding.
+
+### Step 3: Dispatch Agents
+
+For each phase, dispatch a Task tool agent:
+
+```
+Task(
+  subagent_type: "general-purpose",
+  prompt: |
+    You are a specialized agent working on the storefront project.
+
+    ## Your Task
+    [specific task description]
+
+    ## Module Context
+    - Module name: [name]
+    - Package: com.storefront.[name]
+    - Working directory: [path]
+    [output from previous phases if applicable]
+
+    ## Rules (follow exactly)
+    [read and include the full contents of the relevant SKILL.md file]
+
+    ## When Done
+    - Commit your changes with a descriptive message
+    - Report what files you created/modified
+    - Report any issues or decisions you made
+)
+```
+
+**Dispatch rules:**
+- Read the sub-skill's SKILL.md file and include its FULL content in the agent prompt
+- Pass context from previous phases (file paths created, decisions made)
+- Phases run sequentially — each depends on the previous
+- Review each agent's result before dispatching the next
+- If an agent fails, stop and report — do not continue blindly
+
+### Step 4: Verify
+
+After all agents complete:
+
+```bash
+./gradlew build
+./gradlew test
+```
+
+If either fails:
+1. Read the error output
+2. Attempt to fix the issue
+3. Re-run verification
+4. If unable to fix after 2 attempts, report the error to the user
+
+### Step 5: Open PR
+
+```bash
+# Create branch if not already on a feature branch
+git checkout -b feature/[description]
+
+# Push
+git push -u origin feature/[description]
+
+# Open PR
+gh pr create --title "[descriptive title under 70 chars]" --body "$(cat <<'EOF'
+## Summary
+- [bullet points of what was built]
+- [which agents ran and what they produced]
+
+## Test Results
+- [build status]
+- [test status]
+
+## Skills Used
+- [list of skills dispatched]
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+EOF
+)"
+```
+
+### Step 6: Suggest Improvements
+
+After PR is created, dispatch the meta-skill:
+
+```
+Read .claude/skills/storefront-suggest-improvement/SKILL.md
+Dispatch as Task tool agent to review the work for skill drift
+Present any proposals to the user
+```
 
 ## Red Flags — Stop and Discuss
 
@@ -61,3 +158,8 @@ If a task requires multiple skills (e.g., new entity needs schema + domain + wir
 - User wants Module A to directly import Module B's internal classes → suggest public API or events
 - User wants to skip the domain layer and put logic in the controller → push back
 - User wants raw `UUID`/`String`/`Long` for an ID → must be a value object
+- Agent failed and the error looks structural → stop, don't retry blindly
+
+## When NOT to Orchestrate
+
+For simple, single-skill tasks (e.g., "add a column to the orders table"), you don't need the full orchestration flow. Just invoke the relevant skill directly. Use orchestration for multi-skill work.
