@@ -2,6 +2,8 @@
 name: storefront-domain-layer
 description: Use when creating or modifying domain model classes — value objects, aggregates, entities, domain events, and repository interfaces. Enforces tactical DDD patterns and hexagonal purity.
 argument-hint: "[module-name or entity-name]"
+context: fork
+agent: general-purpose
 ---
 
 # Domain Layer — Value Objects, Aggregates, Events, Repository Interfaces

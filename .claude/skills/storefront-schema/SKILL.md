@@ -2,6 +2,8 @@
 name: storefront-schema
 description: Use when creating or modifying database schema — Flyway migrations, jOOQ code generation, and record-to-domain mappers. Enforces naming conventions, column standards, and indexing patterns.
 argument-hint: "[module-name or description]"
+context: fork
+agent: general-purpose
 ---
 
 # Schema — Flyway + jOOQ + Mapping

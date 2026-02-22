@@ -1,6 +1,8 @@
 ---
 name: storefront-suggest-improvement
 description: Use after completing any implementation task to check for skill drift — compares recent work against skill rules and proposes updates. Auto-invoked by the Architect skill after task completion.
+context: fork
+agent: general-purpose
 ---
 
 # Suggest Skill Improvements
@@ -29,7 +31,9 @@ For each changed file, read it and note the patterns used.
 Read each relevant skill file:
 - `.claude/skills/storefront-schema/SKILL.md`
 - `.claude/skills/storefront-domain-layer/SKILL.md`
-- `.claude/skills/storefront-wiring-layer/SKILL.md`
+- `.claude/skills/storefront-repository/SKILL.md`
+- `.claude/skills/storefront-application/SKILL.md`
+- `.claude/skills/storefront-presentation/SKILL.md`
 - `.claude/skills/storefront-add-module/SKILL.md`
 - `.claude/skills/storefront-architect/SKILL.md`
 
